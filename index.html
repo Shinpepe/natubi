@@ -241,6 +241,7 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
 
 <main>
   <div class="wrap">
+    <div id="stale-warn" class="notice" style="display:none"></div>
     <div id="load-error" class="notice" style="display:none">
       ⚠️ 데이터 파일(data/*.json)을 불러오지 못했습니다.<br>
       로컬에서 여는 경우 <span class="mono">python -m http.server</span> 실행 후
@@ -625,6 +626,16 @@ async function init() {
     DATA.screening = screening;
     $('#updated-at').textContent = market.updated;
 
+    // 데이터 신선도 점검: 주말·연휴(최대 4일)를 넘겨도 갱신이 없으면 수집 실패 가능성 안내
+    const dataDate = new Date(market.updated.slice(0, 10) + 'T00:00:00');
+    const ageDays = Math.floor((Date.now() - dataDate) / 86400000);
+    if (ageDays > 4) {
+      const w = $('#stale-warn');
+      w.style.display = 'block';
+      w.innerHTML = `⚠️ 데이터가 <b>${ageDays}일 전</b>(${market.updated.slice(0, 10)}) 기준입니다. ` +
+        `연휴 등으로 갱신이 지연될 수 있으니 데이터 기준일을 확인해 주세요.`;
+    }
+
     renderHome(); renderMarket(); renderScreening();
     renderPortfolio(); renderTrading();
   } catch (e) {
@@ -694,7 +705,7 @@ function renderMarket() {
   const b = m.breadth, tot = b.up + b.down + b.flat || 1;
   $('#breadth-bar').innerHTML =
     `<div style="width:${b.up/tot*100}%;background:var(--up)"></div>
-     <div style="width:${b.flat/tot*100}%;background:#D8DDE3"></div>
+     <div style="width:${b.flat/tot*100}%;background:var(--flat)"></div>
      <div style="width:${b.down/tot*100}%;background:var(--down)"></div>`;
   $('#breadth-legend').innerHTML = `<span>상승 ${fmt(b.up)}</span><span>보합 ${fmt(b.flat)}</span><span>하락 ${fmt(b.down)}</span>`;
   drawHistory();
@@ -970,10 +981,13 @@ function drawStockChart(code, el) {
     yaxis: axis({ tickformat: ',', fixedrange: false }),
   }), { displayModeBar: true, displaylogo: false, scrollZoom: true, responsive: true,
        modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d'] });
+  const host = document.getElementById(el);
+  host.querySelectorAll('.chart-hint').forEach(x => x.remove());   // 재렌더 시 중복 방지
   const hint = document.createElement('div');
+  hint.className = 'chart-hint';
   hint.style.cssText = 'font-size:.78rem;color:var(--sub);text-align:center;margin-top:4px';
   hint.textContent = '🖱️ 휠 확대·축소 · 드래그로 이동 · 하단 슬라이더로 구간 선택 · 더블클릭 초기화';
-  document.getElementById(el).appendChild(hint);
+  host.appendChild(hint);
 }
 
 /* ═══════════════════ 관심 종목 (장바구니) ═══════════════════ */
@@ -1164,7 +1178,7 @@ function drawAssetChart() {
   const last = rows[rows.length - 1][1];
   Plotly.newPlot('asset-chart', [{
     x: rows.map(r => r[0]), y: rows.map(r => r[1]),
-    mode: 'lines+markers', name: '총자산', fill: 'tozeroy',
+    mode: 'lines+markers', name: '총자산',
     line: { color: last >= INIT_CASH ? themeC('--up') : themeC('--down'), width: 2 },
     marker: { size: 4 },
   }], baseLayout({
