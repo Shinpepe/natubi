@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- 나투비 파비콘: 잉크 네이비 바탕 + 상승 차트 라인 -->
+  <rect width="64" height="64" rx="14" fill="#1B2537"/>
+  <path d="M12 44 L24 34 L33 39 L52 18" fill="none" stroke="#D94F4F" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="52" cy="18" r="5" fill="#D94F4F"/>
+  <path d="M12 52 H52" stroke="#68727F" stroke-width="3" stroke-linecap="round" opacity="0.55"/>
+</svg>

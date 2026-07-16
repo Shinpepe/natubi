@@ -3,7 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>나투비</title>
+<title>나투비 — 실적과 데이터로 읽는 투자 시장</title>
+<meta name="description" content="나투비 — 실적과 데이터로 읽는 투자 시장. 시장 심리 분석부터 실적 기반 종목 추천, 포트폴리오 신호, 모의 투자까지 매 거래일 장 마감 후 자동 갱신.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="나투비">
+<meta property="og:description" content="실적과 데이터로 읽는 투자 시장 — 시장 심리 분석, 종목 추천, 포트폴리오 신호, 모의 투자까지 매 거래일 자동 갱신되는 투자 브리핑">
+<meta property="og:image" content="og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="나투비">
+<meta name="twitter:description" content="실적과 데이터로 읽는 투자 시장">
+<meta name="twitter:image" content="og-image.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -11,10 +21,21 @@
 <style>
 :root{
   --paper:#F3F5F7; --card:#FFFFFF; --ink:#1B2537; --sub:#68727F; --line:#E1E5EA;
+  --thead:#F7F9FB; --hover:#F7F9FB; --flat:#D8DDE3; --info-bg:#F0F4FD; --notice-bg:#FBF4F2;
+  --ms-cell:#C7CDD6; --ms-hi:#E6EAEF; --ms-lo:#9AA3B0; --ms-open:#EDF0F3;
   --up:#D94F4F; --down:#3B66D4; --stamp:#C0392B;
   --buy:#1F8A5A; --buy-bg:#E7F5EE; --watch:#B37F1D; --watch-bg:#FBF3E2;
   --warn:#C05252; --warn-bg:#FBEAEA; --none:#8B94A0; --none-bg:#EFF1F4;
   --radius:14px; --shadow:0 1px 2px rgba(27,37,55,.05),0 4px 16px rgba(27,37,55,.06);
+}
+[data-theme="dark"]{
+  --paper:#12161E; --card:#1A2029; --ink:#E8ECF3; --sub:#98A2B2; --line:#2B3342;
+  --up:#F27878; --down:#7A9BF5; --stamp:#E06555;
+  --buy:#52C48D; --buy-bg:#1D3227; --watch:#E3B45F; --watch-bg:#332A12;
+  --warn:#F08C8C; --warn-bg:#3A2124; --none:#8B94A0; --none-bg:#242B36;
+  --thead:#20262F; --hover:#20262F; --flat:#3A4250; --info-bg:#1C2536; --notice-bg:#2E2220;
+  --ms-cell:#39404D; --ms-hi:#4A5261; --ms-lo:#22272F; --ms-open:#242A34;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 4px 14px rgba(0,0,0,.3);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -27,7 +48,7 @@ body{
 .mono{font-family:'IBM Plex Mono',monospace;font-size:.86em;letter-spacing:-.02em}
 .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
 button{font-family:inherit;cursor:pointer}
-input,select{font-family:inherit;font-size:.95rem;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);width:100%}
+input,select{font-family:inherit;font-size:.95rem;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);width:100%}
 input:focus,select:focus,button:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
 
 /* ── 마스트헤드 ── */
@@ -83,10 +104,10 @@ main{padding:28px 0 60px}
 /* 관심 종목 (장바구니) */
 .star{border:none;background:none;font-size:1.12rem;line-height:1;padding:2px 4px;color:#C2C9D2;border-radius:6px}
 .star.on{color:#E8A93C}
-.star:hover{background:#F2F4F7}
+.star:hover{background:var(--hover)}
 .chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
 .chips-lb{font-size:.84rem;color:var(--sub);font-weight:600}
-.chipw{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:20px;background:#fff}
+.chipw{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:20px;background:var(--card)}
 .chipw:hover{border-color:var(--ink)}
 .chipw .pick{border:none;background:none;padding:6px 3px 6px 13px;font-size:.86rem;font-weight:600;border-radius:20px 0 0 20px}
 .chipw .rm{border:none;background:none;padding:6px 11px 6px 4px;color:var(--sub);font-size:.95rem;border-radius:0 20px 20px 0}
@@ -95,17 +116,19 @@ main{padding:28px 0 60px}
 
 /* 테이블 */
 .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
-table{width:100%;border-collapse:collapse;font-size:.88rem;background:#fff}
-th{background:#F7F9FB;color:var(--sub);font-weight:600;font-size:.78rem;padding:9px 12px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--line)}
-td{padding:9px 12px;border-bottom:1px solid #EEF1F4;white-space:nowrap}
+table{width:100%;border-collapse:collapse;font-size:.88rem;background:var(--card)}
+th{background:var(--thead);color:var(--sub);font-weight:600;font-size:.78rem;padding:9px 12px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--line)}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--ink)}
+td{padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
 tr:last-child td{border-bottom:none}
-tbody tr.click:hover{background:#F7F9FB;cursor:pointer}
+tbody tr.click:hover{background:var(--hover);cursor:pointer}
 .num{text-align:right}
 th.num{text-align:right}
 
 /* 서브탭 */
 .subtabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.subtab{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 15px;font-size:.87rem;color:var(--sub)}
+.subtab{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:7px 15px;font-size:.87rem;color:var(--sub)}
 .subtab.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
 
 /* 배지 */
@@ -114,20 +137,20 @@ th.num{text-align:right}
 .bdg.ok{background:var(--buy-bg);color:var(--buy);font-weight:600}
 
 /* 버튼 */
-.btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px 16px;font-size:.9rem;font-weight:600;color:var(--ink)}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:9px 16px;font-size:.9rem;font-weight:600;color:var(--ink)}
 .btn:hover{border-color:var(--ink)}
 .btn.pri{background:var(--ink);border-color:var(--ink);color:#fff}
-.btn.pri:hover{background:#2A3650}
+.btn.pri:hover{opacity:.88}
 .btn.danger{color:var(--warn);border-color:#EBCFCF}
 .btn.sm{padding:5px 11px;font-size:.82rem;border-radius:7px}
 .btn-row{display:flex;gap:8px;flex-wrap:wrap}
 
 /* 검색 자동완성 */
 .search-box{position:relative}
-.suggest{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);z-index:30;max-height:260px;overflow-y:auto;display:none}
+.suggest{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);z-index:30;max-height:260px;overflow-y:auto;display:none}
 .suggest.open{display:block}
 .suggest button{display:flex;justify-content:space-between;width:100%;border:none;background:none;padding:10px 14px;font-size:.9rem;text-align:left}
-.suggest button:hover{background:#F5F7FA}
+.suggest button:hover{background:var(--hover)}
 .suggest .code{color:var(--sub);font-size:.8rem}
 
 /* 게이지 */
@@ -141,41 +164,51 @@ th.num{text-align:right}
 .breadth-legend{display:flex;justify-content:space-between;font-size:.8rem;color:var(--sub)}
 
 /* 보유 종목 카드 */
-.hold{border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px;background:#fff}
+.hold{border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px;background:var(--card)}
 .hold-top{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px}
 .hold-name{font-weight:700;font-size:1.02rem}
 .hold-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px 16px;font-size:.86rem;margin:10px 0;color:var(--sub)}
 .hold-grid b{color:var(--ink)}
 .hold-actions{display:flex;gap:8px;align-items:center}
 .hold-actions input{max-width:180px}
-.wbar{height:7px;background:#EFF1F4;border-radius:4px;overflow:hidden;margin:6px 0 2px}
+.wbar{height:7px;background:var(--none-bg);border-radius:4px;overflow:hidden;margin:6px 0 2px}
 .wbar div{height:100%;background:var(--ink);border-radius:4px}
 
 /* 지뢰찾기 */
 .ms-board{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;max-width:400px;margin:0 auto}
 .ms-cell{
   aspect-ratio:1;border:none;border-radius:5px;font-size:1rem;font-weight:700;
-  background:#C7CDD6;box-shadow:inset 2px 2px 0 #E6EAEF,inset -2px -2px 0 #9AA3B0;
+  background:var(--ms-cell);box-shadow:inset 2px 2px 0 var(--ms-hi),inset -2px -2px 0 var(--ms-lo);color:var(--ink);
 }
 .ms-cell:hover:not(:disabled){filter:brightness(1.05)}
-.ms-cell.open{background:#EDF0F3;box-shadow:none;border:1px solid var(--line);cursor:default}
+.ms-cell.open{background:var(--ms-open);box-shadow:none;border:1px solid var(--line);cursor:default}
 .ms-cell.boom{background:var(--warn-bg)}
 .ms-bar{display:flex;justify-content:space-between;align-items:center;max-width:400px;margin:0 auto 14px}
 .toggle{display:inline-flex;align-items:center;gap:8px;font-size:.9rem;cursor:pointer;user-select:none}
 .toggle input{width:auto}
 
 /* 안내/알림 */
-.notice{border-left:4px solid var(--stamp);background:#FBF4F2;border-radius:0 10px 10px 0;padding:14px 16px;font-size:.9rem;margin-bottom:18px}
-.notice.info{border-color:var(--down);background:#F0F4FD}
+.notice{border-left:4px solid var(--stamp);background:var(--notice-bg);border-radius:0 10px 10px 0;padding:14px 16px;font-size:.9rem;margin-bottom:18px}
+.notice.info{border-color:var(--down);background:var(--info-bg)}
 .empty{color:var(--sub);font-size:.92rem;text-align:center;padding:30px 0}
 .foot{border-top:1px solid var(--line);padding:22px 0 34px;color:var(--sub);font-size:.8rem;text-align:center}
 .result-good{background:var(--buy-bg);color:var(--buy);padding:12px 16px;border-radius:10px;font-weight:600;margin-top:12px}
-.result-info{background:#F0F4FD;color:var(--down);padding:12px 16px;border-radius:10px;font-weight:600;margin-top:8px}
+.result-info{background:var(--info-bg);color:var(--down);padding:12px 16px;border-radius:10px;font-weight:600;margin-top:8px}
 .result-warn{background:var(--watch-bg);color:var(--watch);padding:12px 16px;border-radius:10px;font-weight:600;margin-top:8px}
 .advice{font-size:.94rem}
 .advice h3{font-family:'Gowun Batang',serif;font-size:1.35rem;margin-bottom:8px}
 .advice ul{padding-left:18px;margin-top:6px}
 label.fld{display:block;font-size:.8rem;color:var(--sub);margin-bottom:4px;margin-top:10px}
+details.help{border:1px solid var(--line);border-radius:10px;background:var(--thead);margin-bottom:14px}
+details.help summary{cursor:pointer;padding:11px 15px;font-size:.9rem;font-weight:600;color:var(--sub);user-select:none;list-style:none}
+details.help summary::before{content:'▸ ';color:var(--stamp)}
+details.help[open] summary::before{content:'▾ '}
+details.help[open] summary{border-bottom:1px solid var(--line);color:var(--ink)}
+details.help .body{padding:14px 16px;font-size:.87rem}
+details.help .body h4{font-size:.92rem;margin:10px 0 3px}
+details.help .body h4:first-child{margin-top:0}
+details.help .body p{color:var(--ink);opacity:.85;margin-bottom:4px}
+details.help .body .tip{color:var(--buy);font-size:.83rem}
 </style>
 </head>
 <body>
@@ -188,6 +221,7 @@ label.fld{display:block;font-size:.8rem;color:var(--sub);margin-bottom:4px;margi
       <div class="tagline">실적과 데이터로 읽는 투자 시장</div>
     </div>
     <div class="masthead-right">
+      <button class="btn sm" id="theme-btn">🌙 다크 모드</button>
       <div class="updated">데이터 기준 <b id="updated-at">불러오는 중…</b></div>
     </div>
   </div>
@@ -217,13 +251,49 @@ label.fld{display:block;font-size:.8rem;color:var(--sub);margin-bottom:4px;margi
     <!-- ══ 오늘의 요약 ══ -->
     <section class="view on" id="view-home">
       <div class="grid4" id="home-metrics"></div>
+      <div class="card" id="global-card" style="display:none;margin-top:18px">
+        <h2>글로벌 시장 한눈에</h2>
+        <div class="desc">해외 지수·원자재는 한국시간 새벽 마감(전일 종가) 기준입니다.</div>
+        <div class="grid4" id="global-metrics"></div>
+      </div>
       <div class="card" style="margin-top:18px">
         <h2>오늘의 한 줄</h2>
         <div class="desc">공포-탐욕 지수 기준 나투비의 조언</div>
         <div id="home-advice" class="advice"></div>
       </div>
+      <div class="card">
+        <h2>나투비 200% 활용하는 법</h2>
+        <div class="desc">각 메뉴를 이렇게 활용해 보세요.</div>
+        <details class="help"><summary>🌐 시장 현황 — 시장의 온도를 먼저 읽으세요</summary>
+          <div class="body"><p>내 종목만 보지 말고 시장 전체의 온도와 자금 흐름을 먼저 확인하세요.</p>
+          <p><b>공포-탐욕 지수</b>: 75점 이상 [극심한 탐욕]에선 분할 익절을, 25점 이하 [극심한 공포]에선 우량주 매수 기회를 포착하세요.</p>
+          <p><b>섹터 트리맵</b>: 빨간색이 진하고 면적이 큰 섹터가 오늘 시장을 이끄는 주도 섹터입니다.</p></div></details>
+        <details class="help"><summary>🔍 종목 추천 — 돈 잘 버는 주식 찾기</summary>
+          <div class="body"><p>실제 재무제표(DART)와 차트를 결합해 종목을 선별합니다.</p>
+          <p><b>이익 배수</b>: 시가총액 ÷ 영업이익. <b>10 이하</b>면 버는 돈에 비해 주가가 저렴한 저평가 우량주, 20 이상이면 기대감이 많이 반영된 구간입니다.</p>
+          <p><b>성장 가속(🚀)</b>: 작년보다 올해 성장률이 더 높아진, 주가 탄력이 가장 강한 상태. <b>연속 성장(📈)</b>: 2년 이상 이익이 늘어나는 탄탄한 기업.</p>
+          <p class="tip">Tip: 이익 배수 10 이하 + 성장 가속(🚀) 종목에 주목하고, ☆를 눌러 관심 종목에 담아두세요.</p></div></details>
+        <details class="help"><summary>📋 포트폴리오 — 매도 타이밍 감시</summary>
+          <div class="body"><p>보유 종목을 등록하면 이동평균선을 분석해 상태를 알려줍니다.</p>
+          <p><b>단기 데드크로스(⚠️)</b>: 5일선이 20일선 하향 돌파 — 단기 조정의 시작일 수 있습니다. <b>중기 데드크로스(🚨)</b>: 20일선이 60일선 하향 돌파 — 추세 반전이므로 매도를 검토하세요.</p>
+          <p><b>추천 손절가</b>: 변동폭(ATR) 기반으로 계산되며, 현재가가 이탈하면 즉시 매도 신호가 표시됩니다.</p></div></details>
+        <details class="help"><summary>💰 모의 투자 — 리스크 없는 실전 연습</summary>
+          <div class="body"><p>가상 자본 1,000만 원으로 매매 전략을 테스트하세요. 원화 금액으로 주문하면 수량이 자동 계산되고, 평단가와 실현손익이 자동 관리됩니다. 체결가는 당일 종가 기준입니다.</p></div></details>
+        <details class="help"><summary>🧮 투자 계산기 — 숫자에 근거한 투자</summary>
+          <div class="body"><p><b>물타기 계산기</b>로 추가 매수 후 평단가를 미리 확인하고, <b>복리/배당 계산기</b>로 장기 목표를 시뮬레이션하세요.</p></div></details>
+      </div>
+      <div class="card">
+        <h2>내 데이터 관리</h2>
+        <div class="desc">포트폴리오·모의투자·관심 종목 기록은 이 브라우저에만 저장됩니다. 기기를 바꾸거나 브라우저 데이터를 삭제하면 사라지니, 백업 파일을 받아 보관해 두세요.</div>
+        <div class="btn-row">
+          <button class="btn" id="backup-btn">💾 내 데이터 내보내기</button>
+          <button class="btn" id="restore-btn">📂 백업 불러오기</button>
+          <input type="file" id="restore-file" accept=".json" style="display:none">
+        </div>
+        <div id="backup-msg" style="margin-top:10px;font-size:.86rem;color:var(--buy)"></div>
+      </div>
       <div class="notice info">
-        본 브리핑은 GitHub Actions가 매 거래일 장 마감 후 자동 수집한 데이터로 작성됩니다.
+        본 브리핑은 매 거래일 장 마감 후 자동 수집한 데이터로 작성됩니다.
         장중 실시간 시세가 아닌 <b>일 단위 확정 데이터</b>이며, 최종 투자 판단과 책임은 투자자 본인에게 있습니다.
       </div>
     </section>
@@ -249,6 +319,23 @@ label.fld{display:block;font-size:.8rem;color:var(--sub);margin-bottom:4px;margi
         </div>
       </div>
       <div class="card">
+        <h2>시장 온도 추이</h2>
+        <div class="desc">공포-탐욕 지수가 매 거래일 하나씩 쌓입니다. 시장 심리의 흐름을 읽어보세요.</div>
+        <div id="history-chart" style="height:260px"></div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <h2>달러/원 환율 추이</h2>
+          <div class="desc">환율 상승(원화 약세)은 외국인 수급에 부담이 될 수 있습니다.</div>
+          <div id="fx-chart" style="height:230px"></div>
+        </div>
+        <div class="card">
+          <h2>코스피 vs 나스닥</h2>
+          <div class="desc">기록 시작일을 100으로 놓고 상대 흐름을 비교합니다.</div>
+          <div id="compare-chart" style="height:230px"></div>
+        </div>
+      </div>
+      <div class="card">
         <h2>섹터별 자금 흐름</h2>
         <div class="desc">박스 크기 = 시가총액 · 색 = 전일 대비 등락 (적색 상승 / 청색 하락) · 시총 상위 500종목</div>
         <div id="treemap" style="height:560px"></div>
@@ -261,6 +348,23 @@ label.fld{display:block;font-size:.8rem;color:var(--sub);margin-bottom:4px;margi
       <div class="card">
         <h2>스크리닝 결과</h2>
         <div class="desc" id="screen-desc"></div>
+        <details class="help">
+          <summary>💡 타이밍 지표 설명 보기 — 골든크로스 / 거래량 / RSI / 52주 신고가</summary>
+          <div class="body">
+            <h4>📈 골든크로스</h4>
+            <p>20일 이동평균선이 60일선을 <b>아래에서 위로 돌파</b>한 신호. 상승 모멘텀이 강해지고 있다는 뜻입니다. (기준: 최근 5거래일 이내 발생)</p>
+            <p class="tip">⚠️ 거래량 없이 발생한 골든크로스는 신뢰도가 낮을 수 있습니다.</p>
+            <h4>📊 거래량 급증</h4>
+            <p>당일 거래량이 20일 평균의 <b>150% 이상</b>. 기관·외국인이 움직이거나 시장이 뉴스에 반응하고 있다는 신호입니다.</p>
+            <p class="tip">⚠️ 상승 중 급증은 긍정적, 하락 중 급증은 매도 압력 신호일 수 있습니다.</p>
+            <h4>🔋 RSI (상대강도지수)</h4>
+            <p>최근 14일 상승·하락 폭으로 과열/과매도를 0~100으로 표시. <b>70 이상</b>은 과열, <b>30~55</b>는 과매도 탈출 후 상승 초입(매수 신호 구간), <b>30 이하</b>는 극단적 과매도입니다.</p>
+            <h4>🏔️ 52주 신고가 근접</h4>
+            <p>현재가가 1년 최고점의 <b>90% 이상</b>. 강한 상승 모멘텀 구간이며, 신고가 돌파 직전은 저항이 가장 약해지는 구간입니다.</p>
+            <h4>⭐ 슈퍼픽 / 매수신호 등급</h4>
+            <p>실적 필터(DART 영업이익)와 타이밍 필터(위 4개 중 2개 이상)를 <b>모두 통과</b>한 종목이 슈퍼픽입니다. 종합점수 = 장기점수 50% + 단기점수 50%.</p>
+          </div>
+        </details>
         <div class="subtabs" id="screen-subtabs">
           <button class="subtab on" data-f="all">전체</button>
           <button class="subtab" data-f="super">⭐ 슈퍼픽</button>
@@ -276,7 +380,7 @@ label.fld{display:block;font-size:.8rem;color:var(--sub);margin-bottom:4px;margi
     <section class="view" id="view-port">
       <div class="card">
         <h2>새 종목 추가</h2>
-        <div class="desc">보유 종목을 등록하면 매 거래일 종가 기준으로 수익률을 계산합니다. (브라우저에 저장)</div>
+        <div class="desc">보유 종목을 등록하면 매 거래일 종가 기준으로 수익률과 추세 신호(데드크로스·손절가)를 분석합니다. (브라우저에 저장)</div>
         <div class="chips" id="port-chips"></div>
         <div class="grid3" style="align-items:end">
           <div class="search-box">
@@ -294,6 +398,7 @@ label.fld{display:block;font-size:.8rem;color:var(--sub);margin-bottom:4px;margi
       <div class="card">
         <h2>보유 종목 현황</h2>
         <div class="desc" id="port-date"></div>
+        <div id="port-alerts"></div>
         <div class="tbl-wrap"><table id="port-tbl"></table></div>
         <div class="empty" id="port-empty" style="display:none">등록된 보유 종목이 없습니다. 위에서 추가해 보세요.</div>
       </div>
@@ -302,6 +407,11 @@ label.fld{display:block;font-size:.8rem;color:var(--sub);margin-bottom:4px;margi
     <!-- ══ 모의 투자 ══ -->
     <section class="view" id="view-trade">
       <div class="grid4" id="trade-metrics" style="margin-bottom:18px"></div>
+      <div class="card" id="asset-card" style="display:none">
+        <h2>내 자산 추이</h2>
+        <div class="desc">접속한 날마다 그날 종가 기준 총자산이 기록됩니다. 점선은 초기 자본(1,000만 원)입니다.</div>
+        <div id="asset-chart" style="height:250px"></div>
+      </div>
       <div class="card">
         <h2>원화로 주문하기</h2>
         <div class="desc">매매 체결가는 최신 종가 기준입니다. 초기 자본 1,000만 원 · 기록은 브라우저에 저장됩니다.</div>
@@ -439,8 +549,44 @@ const store = {
   set(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
 };
 
-const DATA = { market: null, prices: [], priceMap: {}, sectors: [], screening: null };
+const DATA = { market: null, prices: [], priceMap: {}, sectors: [], screening: null, signals: {}, signalTopN: 300 };
 const PLOTLY_CFG = { displayModeBar: false, responsive: true };
+
+/* 차트가 현재 테마 색을 따라가도록 CSS 변수에서 색을 읽는 헬퍼 */
+function themeC(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function baseLayout(extra) {
+  return Object.assign({
+    paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+    font: { family: 'Pretendard Variable, sans-serif', size: 12, color: themeC('--ink') },
+  }, extra);
+}
+function axis(extra) { return Object.assign({ gridcolor: themeC('--line'), zerolinecolor: themeC('--line') }, extra); }
+
+/* ═══════════════════ 다크 모드 ═══════════════════ */
+const THEME_KEY = 'ntb_theme';
+let lastDetailCode = null;
+
+function applyTheme(t, redraw) {
+  document.documentElement.dataset.theme = t;
+  localStorage.setItem(THEME_KEY, t);
+  const btn = $('#theme-btn');
+  if (btn) btn.textContent = t === 'dark' ? '☀️ 라이트 모드' : '🌙 다크 모드';
+  if (redraw) redrawCharts();
+}
+
+function redrawCharts() {
+  if (!DATA.market) return;
+  drawGauge(DATA.market.score);
+  drawHistory(); drawGlobalHistory();
+  treemapDrawn = false;
+  if ($('#view-market').classList.contains('on')) drawTreemap();
+  drawTrading();
+  if ($('#calc-comp').style.display !== 'none') calcComp();
+  if (lastDetailCode && $('#screen-detail').style.display !== 'none') drawStockChart(lastDetailCode, 'detail-chart');
+}
+// 저장된 테마 또는 시스템 설정 적용 (차트 그리기 전이므로 redraw 없이)
+applyTheme(localStorage.getItem(THEME_KEY) ||
+  (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'), false);
 
 /* ═══════════════════ 탭 전환 ═══════════════════ */
 $$('.tab').forEach(t => t.addEventListener('click', () => {
@@ -464,6 +610,14 @@ async function init() {
       loadJSON('market.json'), loadJSON('prices.json'),
       loadJSON('sectors.json'), loadJSON('screening.json'),
     ]);
+    try {  // 신호 데이터는 선택적 (없어도 나머지 기능은 동작)
+      const sig = await loadJSON('signals.json');
+      DATA.signals = sig.rows || {};
+      DATA.signalTopN = sig.topN || 300;
+    } catch (e) { console.warn('signals.json 없음 — 추세 신호 비활성화'); }
+    try {
+      DATA.history = (await loadJSON('history.json')).rows || [];
+    } catch (e) { DATA.history = []; }
     DATA.market = market;
     DATA.prices = prices.rows;
     prices.rows.forEach(r => DATA.priceMap[r[0]] = { name: r[1], price: r[2], chg: r[3] });
@@ -478,7 +632,9 @@ async function init() {
     $('#load-error').style.display = 'block';
     $('#updated-at').textContent = '로드 실패';
   }
-  initCalc(); msInit();
+  initCalc(); msInit(); initBackup();
+  $('#theme-btn').onclick = () =>
+    applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark', true);
 }
 
 /* ═══════════════════ 조언 텍스트 ═══════════════════ */
@@ -509,6 +665,19 @@ function renderHome() {
     <div class="metric"><div class="lb">상승 / 하락</div><div class="val"><span class="red">${fmt(m.breadth.up)}</span> <span style="color:var(--line)">/</span> <span class="blue">${fmt(m.breadth.down)}</span></div><div class="sub">보합 ${fmt(m.breadth.flat)}</div></div>
     <div class="metric"><div class="lb">오늘의 슈퍼픽</div><div class="val">${superCnt}종목</div><div class="sub">실적 + 타이밍 동시 충족</div></div>`;
   $('#home-advice').innerHTML = adv.html;
+
+  // 글로벌 지표 타일
+  const ind = m.indicators || [];
+  if (ind.length) {
+    $('#global-card').style.display = 'block';
+    $('#global-metrics').innerHTML = ind.map(([name, val, chg, unit]) => {
+      const valStr = (unit === '$' ? '$' : '') + fmt2(val) + (unit === '원' ? '원' : '');
+      const arrow = chg > 0 ? '▲' : chg < 0 ? '▼' : '–';
+      return `<div class="metric"><div class="lb">${name}</div>
+        <div class="val" style="font-size:1.22rem">${valStr}</div>
+        <div class="sub ${pctCls(chg)}">${arrow} ${Math.abs(chg).toFixed(2)}%</div></div>`;
+    }).join('');
+  }
 }
 
 /* ═══════════════════ 시장 현황 ═══════════════════ */
@@ -528,6 +697,68 @@ function renderMarket() {
      <div style="width:${b.flat/tot*100}%;background:#D8DDE3"></div>
      <div style="width:${b.down/tot*100}%;background:var(--down)"></div>`;
   $('#breadth-legend').innerHTML = `<span>상승 ${fmt(b.up)}</span><span>보합 ${fmt(b.flat)}</span><span>하락 ${fmt(b.down)}</span>`;
+  drawHistory();
+  drawGlobalHistory();
+}
+
+function drawHistory() {
+  const h = DATA.history || [];
+  if (h.length < 2) {
+    $('#history-chart').innerHTML =
+      '<div class="empty">📈 데이터가 쌓이는 중입니다. 이틀째 갱신부터 추이 그래프가 표시됩니다.</div>';
+    return;
+  }
+  const x = h.map(r => r[0]), y = h.map(r => r[1]);
+  Plotly.newPlot('history-chart', [{
+    x, y, name: '시장 온도', mode: 'lines+markers',
+    line: { color: themeC('--ink'), width: 2 }, marker: { size: 5 },
+  }], baseLayout({
+    margin: { t: 8, l: 36, r: 10, b: 30 },
+    xaxis: axis({ type: 'category', nticks: 8, showgrid: false }),
+    yaxis: axis({ range: [0, 100], tickvals: [0, 25, 45, 55, 75, 100] }),
+    // 구간 배경: 공포(청) / 중립 / 탐욕(적)
+    shapes: [
+      { type: 'rect', xref: 'paper', x0: 0, x1: 1, y0: 0,  y1: 25,  fillcolor: '#3B66D4', opacity: .07, line: { width: 0 } },
+      { type: 'rect', xref: 'paper', x0: 0, x1: 1, y0: 75, y1: 100, fillcolor: '#D94F4F', opacity: .07, line: { width: 0 } },
+    ],
+    hovermode: 'x unified',
+  }), PLOTLY_CFG);
+}
+
+function drawGlobalHistory() {
+  const h = (DATA.history || []).filter(r => r[3] && Object.keys(r[3]).length);
+  const growing = '<div class="empty">📈 데이터가 쌓이는 중입니다. 이틀째 갱신부터 표시됩니다.</div>';
+
+  // ── 달러/원 환율 ──
+  const fx = h.filter(r => r[3]['달러/원'] != null);
+  if (fx.length < 2) $('#fx-chart').innerHTML = growing;
+  else Plotly.newPlot('fx-chart', [{
+    x: fx.map(r => r[0]), y: fx.map(r => r[3]['달러/원']),
+    mode: 'lines+markers', name: '달러/원',
+    line: { color: themeC('--up'), width: 2 }, marker: { size: 4 },
+  }], baseLayout({
+    margin: { t: 8, l: 48, r: 10, b: 30 }, hovermode: 'x unified',
+    xaxis: axis({ type: 'category', nticks: 6, showgrid: false }),
+    yaxis: axis({ tickformat: ',' }),
+  }), PLOTLY_CFG);
+
+  // ── 코스피 vs 나스닥 (시작=100 지수화) ──
+  const cmp = h.filter(r => r[2] != null && r[3]['나스닥'] != null);
+  if (cmp.length < 2) { $('#compare-chart').innerHTML = growing; return; }
+  const k0 = cmp[0][2], n0 = cmp[0][3]['나스닥'];
+  Plotly.newPlot('compare-chart', [
+    { x: cmp.map(r => r[0]), y: cmp.map(r => +(r[2] / k0 * 100).toFixed(2)),
+      mode: 'lines', name: 'KOSPI', line: { color: themeC('--up'), width: 2 } },
+    { x: cmp.map(r => r[0]), y: cmp.map(r => +(r[3]['나스닥'] / n0 * 100).toFixed(2)),
+      mode: 'lines', name: '나스닥', line: { color: themeC('--down'), width: 2 } },
+  ], baseLayout({
+    margin: { t: 8, l: 40, r: 10, b: 30 }, hovermode: 'x unified',
+    legend: { orientation: 'h', y: 1.15 },
+    xaxis: axis({ type: 'category', nticks: 6, showgrid: false }),
+    yaxis: axis({}),
+    shapes: [{ type: 'line', xref: 'paper', x0: 0, x1: 1, y0: 100, y1: 100,
+               line: { color: themeC('--sub'), width: 1, dash: 'dot' } }],
+  }), PLOTLY_CFG);
 }
 
 function drawGauge(score) {
@@ -547,11 +778,11 @@ function drawGauge(score) {
   });
   ['공포', '중립', '탐욕'].forEach((t, i) => {
     const [x, y] = pt([12, 50, 88][i], R + 24);
-    svg += `<text x="${x}" y="${y}" text-anchor="middle" font-size="12" fill="#68727F">${t}</text>`;
+    svg += `<text x="${x}" y="${y}" text-anchor="middle" font-size="12" style="fill:var(--sub)">${t}</text>`;
   });
   const [nx, ny] = pt(score, R - W / 2 - 8);
-  svg += `<line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="#1B2537" stroke-width="3.5" stroke-linecap="round"/>`;
-  svg += `<circle cx="${cx}" cy="${cy}" r="7" fill="#1B2537"/>`;
+  svg += `<line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" style="stroke:var(--ink)" stroke-width="3.5" stroke-linecap="round"/>`;
+  svg += `<circle cx="${cx}" cy="${cy}" r="7" style="fill:var(--ink)"/>`;
   $('#gauge').innerHTML = svg;
 }
 
@@ -576,7 +807,7 @@ function drawTreemap() {
     hovertemplate: '%{label}<br>시총 %{value:,}억 · %{text}<extra></extra>',
     marker: { colors, colorscale: 'RdBu', reversescale: true, cmid: 0, cmin: -3, cmax: 3, line: { width: 1, color: '#fff' } },
     pathbar: { visible: false },
-  }], { margin: { t: 8, l: 4, r: 4, b: 4 }, font: { family: 'Pretendard Variable, sans-serif' } }, PLOTLY_CFG);
+  }], baseLayout({ margin: { t: 8, l: 4, r: 4, b: 4 } }), PLOTLY_CFG);
 }
 
 /* ═══════════════════ 종목 추천 ═══════════════════ */
@@ -584,6 +815,7 @@ const GRADE_CLS = g => g.includes('강한 매수') || g.includes('매수 검토'
   : g.includes('관망') ? 'watch' : g.includes('주의') ? 'warn' : 'none';
 
 let screenFilter = 'all';
+let screenSort = { key: 'totalScore', dir: -1 };   // 기본: 종합점수 내림차순
 
 function renderScreening() {
   const sc = DATA.screening;
@@ -612,21 +844,39 @@ function renderScreening() {
   drawScreenTable();
 }
 
+function sortRows(rs) {
+  const { key, dir } = screenSort;
+  return rs.slice().sort((a, b) => {
+    const va = a[key], vb = b[key];
+    if (va == null && vb == null) return 0;
+    if (va == null) return 1;   // 값 없는 행은 정렬 방향과 무관하게 아래로
+    if (vb == null) return -1;
+    if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * dir;
+    return String(va).localeCompare(String(vb), 'ko') * dir;
+  });
+}
+
 function drawScreenTable() {
-  const rs = DATA.screening.results.filter(r =>
+  const rs = sortRows(DATA.screening.results.filter(r =>
     screenFilter === 'super' ? r.fundPass && r.timingPass :
     screenFilter === 'fund' ? r.fundPass :
     screenFilter === 'timing' ? r.timingPass : true
-  ).slice().sort((a, b) => b.totalScore - a.totalScore);
+  ));
 
   if (!rs.length) {
     $('#screen-tbl').innerHTML = '<tbody><tr><td class="empty">조건을 충족하는 종목이 없습니다.</td></tr></tbody>';
     return;
   }
+  const COLS = [
+    ['name', '종목명', ''], ['code', '코드', ''], ['price', '현재가', 'num'],
+    ['diff', '전일대비', 'num'], ['multiple', '이익배수', 'num'], ['trait', '성장특성', ''],
+    ['sigCount', '신호', 'num'], ['totalScore', '종합점수', 'num'], ['grade', '매수신호', ''],
+  ];
+  const arrow = k => screenSort.key === k ? (screenSort.dir < 0 ? ' ▼' : ' ▲') : '';
   let html = `<thead><tr>
     <th title="관심 종목 담기">🌟</th>
-    <th>종목명</th><th>코드</th><th class="num">현재가</th><th class="num">전일대비</th>
-    <th class="num">이익배수</th><th>성장특성</th><th class="num">신호</th><th class="num">종합점수</th><th>매수신호</th>
+    ${COLS.map(([k, lb, cls]) =>
+      `<th class="sortable ${cls}" data-k="${k}" title="클릭하여 정렬">${lb}${arrow(k)}</th>`).join('')}
   </tr></thead><tbody>`;
   rs.forEach(r => {
     const w = isWatched(r.code);
@@ -646,11 +896,18 @@ function drawScreenTable() {
     e.stopPropagation();                       // 행 클릭(상세 열기)과 분리
     toggleWatch(b.dataset.w, b.dataset.n);
   });
+  $$('#screen-tbl th.sortable').forEach(th => th.onclick = () => {
+    const k = th.dataset.k;
+    if (screenSort.key === k) screenSort.dir *= -1;   // 같은 컬럼 재클릭 → 방향 반전
+    else screenSort = { key: k, dir: -1 };
+    drawScreenTable();
+  });
 }
 
 function showDetail(code) {
   const r = DATA.screening.results.find(x => x.code === code);
   if (!r) return;
+  lastDetailCode = code;
   const bdg = (ok, txt) => `<span class="bdg ${ok ? 'ok' : ''}">${ok ? '✅' : '❌'} ${txt}</span>`;
   const y = DATA.screening.targetYear;
   const fundHtml = r.fundPass ? `
@@ -690,7 +947,7 @@ function drawStockChart(code, el) {
   const c = DATA.screening.charts[code];
   if (!c) { $('#' + el).innerHTML = '<div class="empty">차트 데이터가 없습니다.</div>'; return; }
   const traces = [
-    { x: c.dates, y: c.close, name: '종가', line: { color: '#1B2537', width: 1.4 } },
+    { x: c.dates, y: c.close, name: '종가', line: { color: themeC('--ink'), width: 1.4 } },
     { x: c.dates, y: c.ma20, name: '20일선', line: { color: '#D97843', width: 1.6 } },
     { x: c.dates, y: c.ma60, name: '60일선', line: { color: '#3B66D4', width: 1.6 } },
   ];
@@ -703,15 +960,15 @@ function drawStockChart(code, el) {
   }
   if (gx.length) traces.push({ x: gx, y: gy, mode: 'markers', name: '골든크로스',
     marker: { symbol: 'triangle-up', size: 13, color: '#D94F4F' } });
-  Plotly.newPlot(el, traces, {
-    margin: { t: 10, l: 50, r: 10, b: 20 }, template: 'plotly_white',
-    legend: { orientation: 'h', y: 1.12 }, font: { family: 'Pretendard Variable, sans-serif', size: 12 },
+  Plotly.newPlot(el, traces, baseLayout({
+    margin: { t: 10, l: 50, r: 10, b: 20 },
+    legend: { orientation: 'h', y: 1.12 },
     dragmode: 'pan', hovermode: 'x unified',
     // type:'category' — 거래일만 이어 붙여 주말 공백·연도 오해석 없이 끊김 없는 차트
-    xaxis: { type: 'category', nticks: 8, showgrid: false,
-             rangeslider: { visible: true, thickness: 0.09 } },
-    yaxis: { tickformat: ',', fixedrange: false },
-  }, { displayModeBar: true, displaylogo: false, scrollZoom: true, responsive: true,
+    xaxis: axis({ type: 'category', nticks: 8, showgrid: false,
+             rangeslider: { visible: true, thickness: 0.09 } }),
+    yaxis: axis({ tickformat: ',', fixedrange: false }),
+  }), { displayModeBar: true, displaylogo: false, scrollZoom: true, responsive: true,
        modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d'] });
   const hint = document.createElement('div');
   hint.style.cssText = 'font-size:.78rem;color:var(--sub);text-align:center;margin-top:4px';
@@ -818,22 +1075,50 @@ function renderPortfolio() {
   drawPortTable();
 }
 
+function stockStatus(s) {
+  // 원본 check_my_stocks 상태 판정 이식:
+  // 손절가 = max(현재가 - 2×ATR, 매수가×0.95) · 목표가 = 현재가 + 2×ATR
+  const info = DATA.priceMap[s.code];
+  const sig = DATA.signals[s.code];
+  const cur = info ? info.price : null;
+  if (!cur) return { cur: null, status: '❌ 데이터 없음', cls: 'none', level: 0 };
+  if (!sig) return { cur, status: '📋 분석 대상 외', cls: 'none', level: 0,
+                     note: `추세 신호는 시총 상위 ${DATA.signalTopN}종목까지 계산됩니다.` };
+  const [, atr, d520, d2060] = sig;
+  const stop = Math.max(cur - atr * 2, s.buy * 0.95);
+  const target = cur + atr * 2;
+  const vol = atr / cur * 100;
+  let status, cls, level;
+  if (cur <= stop)             { status = '🚨 손절가 이탈(즉시 매도)'; cls = 'warn';  level = 2; }
+  else if (cur <= stop * 1.02) { status = '🚩 손절가 근접(주의)';     cls = 'watch'; level = 1; }
+  else if (d2060)              { status = '🚨 데드크로스 발생(매도 검토)'; cls = 'warn'; level = 2; }
+  else if (d520)               { status = '⚠️ 단기 조정 주의';        cls = 'watch'; level = 1; }
+  else                         { status = '✅ 보유 유지';             cls = 'buy';   level = 0; }
+  return { cur, stop, target, vol, status, cls, level };
+}
+
 function drawPortTable() {
   const list = store.get(PORT_KEY, []);
-  const tbl = $('#port-tbl'), empty = $('#port-empty');
-  if (!list.length) { tbl.innerHTML = ''; empty.style.display = 'block'; return; }
+  const tbl = $('#port-tbl'), empty = $('#port-empty'), alerts = $('#port-alerts');
+  if (!list.length) { tbl.innerHTML = ''; alerts.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
   let html = `<thead><tr><th>종목명</th><th>코드</th><th class="num">매수가</th>
-    <th class="num">현재가(종가)</th><th class="num">등락</th><th class="num">수익률</th><th></th></tr></thead><tbody>`;
+    <th class="num">현재가(종가)</th><th class="num">수익률</th>
+    <th class="num">추천 손절가</th><th class="num">추천 목표가</th><th class="num">위험도</th>
+    <th>상태</th><th></th></tr></thead><tbody>`;
+  const alertRows = [];
   list.forEach((s, i) => {
-    const info = DATA.priceMap[s.code];
-    const cur = info ? info.price : null;
-    const rate = cur ? (cur / s.buy - 1) * 100 : null;
+    const st = stockStatus(s);
+    const rate = st.cur ? (st.cur / s.buy - 1) * 100 : null;
+    if (st.level >= 1) alertRows.push({ name: s.name, status: st.status, level: st.level });
     html += `<tr><td><b>${s.name}</b></td><td class="mono">${s.code}</td>
       <td class="num">${won(s.buy)}</td>
-      <td class="num">${cur ? won(cur) : '–'}</td>
-      <td class="num ${info ? pctCls(info.chg) : ''}">${info ? (info.chg > 0 ? '+' : '') + info.chg + '%' : '–'}</td>
+      <td class="num">${st.cur ? won(st.cur) : '–'}</td>
       <td class="num ${rate != null ? pctCls(rate) : ''}"><b>${rate != null ? (rate > 0 ? '+' : '') + rate.toFixed(2) + '%' : '–'}</b></td>
+      <td class="num">${st.stop ? won(st.stop) : '–'}</td>
+      <td class="num">${st.target ? won(st.target) : '–'}</td>
+      <td class="num">${st.vol != null ? st.vol.toFixed(1) + '%' : '–'}</td>
+      <td><span class="chip ${st.cls}" ${st.note ? `title="${st.note}"` : ''}>${st.status}</span></td>
       <td><button class="btn sm danger" data-i="${i}">삭제</button></td></tr>`;
   });
   tbl.innerHTML = html + '</tbody>';
@@ -843,11 +1128,53 @@ function drawPortTable() {
     store.set(PORT_KEY, list);
     drawPortTable();
   });
+  // 위험 종목 하단 알림 (원본과 동일한 우선순위)
+  alerts.innerHTML = alertRows
+    .sort((a, b) => b.level - a.level)
+    .map(a => a.level >= 2
+      ? `<div class="notice" style="margin-bottom:10px">🚨 <b>${a.name}</b>: ${a.status}! 즉시 대응이 필요합니다.</div>`
+      : `<div class="notice" style="margin-bottom:10px;border-color:var(--watch);background:var(--watch-bg)">⚠️ <b>${a.name}</b>: ${a.status}. 주시하고 대응을 준비하세요.</div>`)
+    .join('');
 }
 
 /* ═══════════════════ 모의 투자 ═══════════════════ */
 const TRADE_KEY = 'ntb_trading_v1';
+const ASSET_KEY = 'ntb_asset_hist_v1';
 const INIT_CASH = 10000000;
+
+function recordAsset(totalAsset) {
+  // 데이터 기준일(종가 날짜)별로 1개씩 기록 — 같은 날 재접속 시 갱신
+  const day = (DATA.market?.updated || '').slice(0, 10) || new Date().toISOString().slice(0, 10);
+  let rows = store.get(ASSET_KEY, []);
+  rows = rows.filter(r => r[0] !== day);
+  rows.push([day, Math.round(totalAsset)]);
+  rows.sort((a, b) => a[0] < b[0] ? -1 : 1);
+  store.set(ASSET_KEY, rows.slice(-365));
+}
+
+function drawAssetChart() {
+  const rows = store.get(ASSET_KEY, []);
+  const card = $('#asset-card');
+  if (!rows.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  if (rows.length < 2) {
+    $('#asset-chart').innerHTML = '<div class="empty">📈 기록이 쌓이는 중입니다. 다음 거래일에 다시 접속하면 그래프가 그려져요.</div>';
+    return;
+  }
+  const last = rows[rows.length - 1][1];
+  Plotly.newPlot('asset-chart', [{
+    x: rows.map(r => r[0]), y: rows.map(r => r[1]),
+    mode: 'lines+markers', name: '총자산', fill: 'tozeroy',
+    line: { color: last >= INIT_CASH ? themeC('--up') : themeC('--down'), width: 2 },
+    marker: { size: 4 },
+  }], baseLayout({
+    margin: { t: 8, l: 66, r: 10, b: 30 }, hovermode: 'x unified',
+    xaxis: axis({ type: 'category', nticks: 6, showgrid: false }),
+    yaxis: axis({ tickformat: ',' }),
+    shapes: [{ type: 'line', xref: 'paper', x0: 0, x1: 1, y0: INIT_CASH, y1: INIT_CASH,
+               line: { color: themeC('--sub'), width: 1.2, dash: 'dot' } }],
+  }), PLOTLY_CFG);
+}
 let tradePicked = null;
 
 function pickForTrade(code) {
@@ -902,6 +1229,7 @@ function renderTrading() {
   $('#trade-reset').onclick = () => {
     if (confirm('모든 모의투자 기록을 초기화할까요? 되돌릴 수 없습니다.')) {
       localStorage.removeItem(TRADE_KEY);
+      localStorage.removeItem(ASSET_KEY);
       drawTrading();
     }
   };
@@ -922,6 +1250,8 @@ function drawTrading() {
   });
   const realized = st.trades.filter(t => t.side === 'SELL').reduce((s, t) => s + (t.profit || 0), 0);
   const totalAsset = st.cash + stockVal;
+  if (st.trades.length) recordAsset(totalAsset);   // 거래 시작 후부터 기록
+  drawAssetChart();
 
   $('#trade-metrics').innerHTML = `
     <div class="metric"><div class="lb">💰 총 자산</div><div class="val">${won(totalAsset)}</div>
@@ -994,6 +1324,48 @@ function drawTrading() {
   $('#trade-tbl').innerHTML = html + '</tbody>';
 }
 
+/* ═══════════════════ 내 데이터 백업/복원 ═══════════════════ */
+const BACKUP_KEYS = [PORT_KEY, TRADE_KEY, WATCH_KEY, ASSET_KEY];
+
+function initBackup() {
+  $('#backup-btn').onclick = () => {
+    const payload = { app: 'natubi', version: 1, exported: new Date().toISOString(), data: {} };
+    BACKUP_KEYS.forEach(k => {
+      const v = localStorage.getItem(k);
+      if (v != null) payload.data[k] = JSON.parse(v);
+    });
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `natubi-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    $('#backup-msg').textContent = '✅ 백업 파일이 다운로드되었습니다. 안전한 곳에 보관하세요.';
+  };
+  $('#restore-btn').onclick = () => $('#restore-file').click();
+  $('#restore-file').onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const payload = JSON.parse(reader.result);
+        if (payload.app !== 'natubi' || !payload.data) throw new Error('형식 불일치');
+        if (!confirm('백업을 불러오면 현재 브라우저의 포트폴리오·모의투자·관심 종목 기록을 덮어씁니다. 진행할까요?')) return;
+        Object.entries(payload.data).forEach(([k, v]) => {
+          if (BACKUP_KEYS.includes(k)) store.set(k, v);
+        });
+        drawPortTable(); drawTrading(); refreshWatchUI();
+        $('#backup-msg').textContent = `✅ 백업(${(payload.exported || '').slice(0, 10)})을 불러왔습니다.`;
+      } catch (err) {
+        alert('백업 파일을 읽을 수 없습니다. 나투비에서 내보낸 파일이 맞는지 확인해주세요.');
+      }
+      e.target.value = '';
+    };
+    reader.readAsText(file);
+  };
+}
+
 /* ═══════════════════ 투자 계산기 ═══════════════════ */
 function initCalc() {
   $$('[data-c]').forEach(b => b.onclick = () => {
@@ -1056,9 +1428,9 @@ function calcComp() {
   Plotly.newPlot('cp-chart', [
     { x: xs, y: total, name: '자산 총액', fill: 'tozeroy', line: { color: '#3B66D4', width: 3 } },
     { x: xs, y: invested, name: '누적 투자원금', line: { color: '#D97843', width: 2, dash: 'dot' } },
-  ], { margin: { t: 16, l: 66, r: 10, b: 30 }, hovermode: 'x unified',
-    legend: { orientation: 'h', y: 1.12 }, font: { family: 'Pretendard Variable, sans-serif', size: 12 },
-    yaxis: { tickformat: ',' } }, PLOTLY_CFG);
+  ], baseLayout({ margin: { t: 16, l: 66, r: 10, b: 30 }, hovermode: 'x unified',
+    legend: { orientation: 'h', y: 1.12 },
+    xaxis: axis({}), yaxis: axis({ tickformat: ',' }) }), PLOTLY_CFG);
 }
 
 /* ═══════════════════ 지뢰찾기 ═══════════════════ */
