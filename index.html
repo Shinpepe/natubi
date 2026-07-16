@@ -92,6 +92,8 @@ main{padding:28px 0 60px}
 .metric .lb{font-size:.8rem;color:var(--sub)}
 .metric .val{font-size:1.5rem;font-weight:700;letter-spacing:-.01em}
 .metric .sub{font-size:.8rem;color:var(--sub);margin-top:2px}
+.metric .sub.red{color:var(--up)}
+.metric .sub.blue{color:var(--down)}
 .red{color:var(--up)} .blue{color:var(--down)}
 
 /* 등급 칩 */
@@ -816,7 +818,9 @@ function drawTreemap() {
     type: 'treemap', ids, labels, parents, values, text: texts,
     branchvalues: 'remainder', textinfo: 'label+text',
     hovertemplate: '%{label}<br>시총 %{value:,}억 · %{text}<extra></extra>',
-    marker: { colors, colorscale: 'RdBu', reversescale: true, cmid: 0, cmin: -3, cmax: 3, line: { width: 1, color: '#fff' } },
+    marker: { colors,
+      colorscale: [[0, '#3B66D4'], [0.5, '#F4F4F4'], [1, '#D94F4F']],  // 하락=청 · 보합=무채 · 상승=적
+      cmid: 0, cmin: -3, cmax: 3, line: { width: 1, color: '#fff' } },
     pathbar: { visible: false },
   }], baseLayout({ margin: { t: 8, l: 4, r: 4, b: 4 } }), PLOTLY_CFG);
 }
