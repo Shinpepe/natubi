@@ -1157,6 +1157,10 @@ async function drawStockChart(code, el) {
   }
   if (gx.length) traces.push({ x: gx, y: gy, mode: 'markers', name: '골든크로스',
     marker: { symbol: 'triangle-up', size: 13, color: '#D94F4F' } });
+  // Plotly는 컨테이너의 기존 내용(로딩 문구)을 지워주지 않으므로 직접 비운 뒤 그린다
+  const host = document.getElementById(el);
+  try { Plotly.purge(host); } catch (e) {}
+  host.innerHTML = '';
   Plotly.newPlot(el, traces, baseLayout({
     height: 400,
     margin: { t: 10, l: 50, r: 10, b: 20 },
@@ -1167,8 +1171,6 @@ async function drawStockChart(code, el) {
     yaxis: axis({ tickformat: ',', fixedrange: false }),
   }), { displayModeBar: true, displaylogo: false, scrollZoom: true, responsive: true,
        modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d'] });
-  const host = document.getElementById(el);
-  host.querySelectorAll('.chart-hint').forEach(x => x.remove());
   const hint = document.createElement('div');
   hint.className = 'chart-hint';
   hint.style.cssText = 'font-size:.78rem;color:var(--sub);text-align:center;margin-top:4px';
