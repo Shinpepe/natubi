@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>나투비 — 장마감 브리핑</title>
+<title>나투비</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -37,12 +37,6 @@ input:focus,select:focus,button:focus-visible{outline:2px solid var(--ink);outli
 .brand h1{font-family:'Gowun Batang',serif;font-size:2.3rem;font-weight:700;letter-spacing:.04em;line-height:1.15}
 .brand .tagline{font-size:.88rem;color:var(--sub);margin-top:2px}
 .masthead-right{text-align:right;flex-shrink:0}
-.stamp{
-  display:inline-block;border:2.5px solid var(--stamp);color:var(--stamp);
-  font-family:'Gowun Batang',serif;font-weight:700;font-size:1.02rem;letter-spacing:.28em;
-  padding:6px 12px 6px 15px;border-radius:6px;transform:rotate(-4deg);
-  opacity:.92;mix-blend-mode:multiply;
-}
 .updated{font-size:.78rem;color:var(--sub);margin-top:8px}
 .updated b{color:var(--ink)}
 
@@ -85,6 +79,19 @@ main{padding:28px 0 60px}
 .chip.watch{background:var(--watch-bg);color:var(--watch)}
 .chip.warn{background:var(--warn-bg);color:var(--warn)}
 .chip.none{background:var(--none-bg);color:var(--none)}
+
+/* 관심 종목 (장바구니) */
+.star{border:none;background:none;font-size:1.12rem;line-height:1;padding:2px 4px;color:#C2C9D2;border-radius:6px}
+.star.on{color:#E8A93C}
+.star:hover{background:#F2F4F7}
+.chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.chips-lb{font-size:.84rem;color:var(--sub);font-weight:600}
+.chipw{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:20px;background:#fff}
+.chipw:hover{border-color:var(--ink)}
+.chipw .pick{border:none;background:none;padding:6px 3px 6px 13px;font-size:.86rem;font-weight:600;border-radius:20px 0 0 20px}
+.chipw .rm{border:none;background:none;padding:6px 11px 6px 4px;color:var(--sub);font-size:.95rem;border-radius:0 20px 20px 0}
+.chipw .rm:hover{color:var(--warn)}
+.chips-empty{font-size:.83rem;color:var(--sub)}
 
 /* 테이블 */
 .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
@@ -177,11 +184,10 @@ label.fld{display:block;font-size:.8rem;color:var(--sub);margin-bottom:4px;margi
   <div class="wrap">
     <div class="brand">
       <div class="eyebrow">나의 투자 비서</div>
-      <h1>나투비 브리핑</h1>
-      <div class="tagline">실적과 데이터로 읽는 오늘의 시장 — 매 거래일 장 마감 후 자동 발행</div>
+      <h1>나투비</h1>
+      <div class="tagline">실적과 데이터로 읽는 투자 시장</div>
     </div>
     <div class="masthead-right">
-      <span class="stamp">장마감 브리핑</span>
       <div class="updated">데이터 기준 <b id="updated-at">불러오는 중…</b></div>
     </div>
   </div>
@@ -271,6 +277,7 @@ label.fld{display:block;font-size:.8rem;color:var(--sub);margin-bottom:4px;margi
       <div class="card">
         <h2>새 종목 추가</h2>
         <div class="desc">보유 종목을 등록하면 매 거래일 종가 기준으로 수익률을 계산합니다. (브라우저에 저장)</div>
+        <div class="chips" id="port-chips"></div>
         <div class="grid3" style="align-items:end">
           <div class="search-box">
             <label class="fld">종목 검색</label>
@@ -298,6 +305,7 @@ label.fld{display:block;font-size:.8rem;color:var(--sub);margin-bottom:4px;margi
       <div class="card">
         <h2>원화로 주문하기</h2>
         <div class="desc">매매 체결가는 최신 종가 기준입니다. 초기 자본 1,000만 원 · 기록은 브라우저에 저장됩니다.</div>
+        <div class="chips" id="trade-chips"></div>
         <div class="grid3" style="align-items:end">
           <div class="search-box">
             <label class="fld">종목 검색</label>
@@ -411,7 +419,7 @@ label.fld{display:block;font-size:.8rem;color:var(--sub);margin-bottom:4px;margi
 
 <footer class="foot">
   <div class="wrap">
-    나투비 — 데이터는 GitHub Actions로 매 거래일 자동 갱신됩니다 · 본 서비스가 제공하는 지표는 참고용이며 투자 판단의 책임은 본인에게 있습니다<br>
+    나투비 — 데이터는 매 거래일 장 마감 후 자동 갱신됩니다 · 본 서비스가 제공하는 지표는 참고용이며 투자 판단의 책임은 본인에게 있습니다<br>
     © 2026 Made by ShinHyunSu
   </div>
 </footer>
@@ -616,11 +624,15 @@ function drawScreenTable() {
     return;
   }
   let html = `<thead><tr>
+    <th title="관심 종목 담기">🌟</th>
     <th>종목명</th><th>코드</th><th class="num">현재가</th><th class="num">전일대비</th>
     <th class="num">이익배수</th><th>성장특성</th><th class="num">신호</th><th class="num">종합점수</th><th>매수신호</th>
   </tr></thead><tbody>`;
   rs.forEach(r => {
+    const w = isWatched(r.code);
     html += `<tr class="click" data-code="${r.code}">
+      <td><button class="star ${w ? 'on' : ''}" data-w="${r.code}" data-n="${r.name}"
+        title="${w ? '관심 종목에서 제거' : '관심 종목에 담기'}">${w ? '★' : '☆'}</button></td>
       <td><b>${r.name}</b></td><td class="mono">${r.code}</td>
       <td class="num">${r.price != null ? won(r.price) : '–'}</td>
       <td class="num ${pctCls(r.diff || 0)}">${r.diff != null ? signWon(r.diff) : '–'}</td>
@@ -630,6 +642,10 @@ function drawScreenTable() {
   });
   $('#screen-tbl').innerHTML = html + '</tbody>';
   $$('#screen-tbl tr.click').forEach(tr => tr.onclick = () => showDetail(tr.dataset.code));
+  $$('#screen-tbl .star').forEach(b => b.onclick = e => {
+    e.stopPropagation();                       // 행 클릭(상세 열기)과 분리
+    toggleWatch(b.dataset.w, b.dataset.n);
+  });
 }
 
 function showDetail(code) {
@@ -651,7 +667,10 @@ function showDetail(code) {
       <div><span style="font-size:1.15rem;font-weight:700">${r.name}</span>
         <span class="mono" style="color:var(--sub)"> ${r.code}</span>
         <span class="chip ${GRADE_CLS(r.grade)}" style="margin-left:8px">${r.grade}</span></div>
-      <div style="font-size:.9rem;color:var(--sub)">종합점수 <b style="color:var(--ink)">${r.totalScore}점</b></div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span style="font-size:.9rem;color:var(--sub)">종합점수 <b style="color:var(--ink)">${r.totalScore}점</b></span>
+        <button class="btn sm" id="detail-watch">${isWatched(r.code) ? '★ 담김 (해제)' : '☆ 관심 종목 담기'}</button>
+      </div>
     </div>
     <div class="desc" style="margin:6px 0 10px">💬 ${r.summary}</div>
     ${fundHtml}
@@ -661,7 +680,8 @@ function showDetail(code) {
       ${bdg(r.rsiSignal, `RSI ${(r.rsi ?? 0).toFixed(0)}`)}
       ${bdg(r.near52, `52주고점 ${(r.high52Ratio ?? 0).toFixed(0)}%`)}
     </div>
-    <div id="detail-chart" style="height:340px"></div>`;
+    <div id="detail-chart" style="height:400px"></div>`;
+  $('#detail-watch').onclick = () => { toggleWatch(r.code, r.name); showDetail(code); };
   drawStockChart(code, 'detail-chart');
   d.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
@@ -684,10 +704,61 @@ function drawStockChart(code, el) {
   if (gx.length) traces.push({ x: gx, y: gy, mode: 'markers', name: '골든크로스',
     marker: { symbol: 'triangle-up', size: 13, color: '#D94F4F' } });
   Plotly.newPlot(el, traces, {
-    margin: { t: 10, l: 50, r: 10, b: 30 }, template: 'plotly_white',
-    legend: { orientation: 'h', y: 1.1 }, font: { family: 'Pretendard Variable, sans-serif', size: 12 },
-    xaxis: { showgrid: false }, yaxis: { tickformat: ',' },
-  }, PLOTLY_CFG);
+    margin: { t: 10, l: 50, r: 10, b: 20 }, template: 'plotly_white',
+    legend: { orientation: 'h', y: 1.12 }, font: { family: 'Pretendard Variable, sans-serif', size: 12 },
+    dragmode: 'pan', hovermode: 'x unified',
+    // type:'category' — 거래일만 이어 붙여 주말 공백·연도 오해석 없이 끊김 없는 차트
+    xaxis: { type: 'category', nticks: 8, showgrid: false,
+             rangeslider: { visible: true, thickness: 0.09 } },
+    yaxis: { tickformat: ',', fixedrange: false },
+  }, { displayModeBar: true, displaylogo: false, scrollZoom: true, responsive: true,
+       modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d'] });
+  const hint = document.createElement('div');
+  hint.style.cssText = 'font-size:.78rem;color:var(--sub);text-align:center;margin-top:4px';
+  hint.textContent = '🖱️ 휠 확대·축소 · 드래그로 이동 · 하단 슬라이더로 구간 선택 · 더블클릭 초기화';
+  document.getElementById(el).appendChild(hint);
+}
+
+/* ═══════════════════ 관심 종목 (장바구니) ═══════════════════ */
+const WATCH_KEY = 'ntb_watchlist_v1';
+const getWatch = () => store.get(WATCH_KEY, []);
+const isWatched = code => getWatch().some(w => w.code === code);
+
+function toggleWatch(code, name) {
+  let list = getWatch();
+  if (list.some(w => w.code === code)) list = list.filter(w => w.code !== code);
+  else list.push({ code, name });
+  store.set(WATCH_KEY, list);
+  refreshWatchUI();
+}
+
+function renderWatchChips(elId, onPick) {
+  const el = $(elId);
+  if (!el) return;
+  const list = getWatch();
+  if (!list.length) {
+    el.innerHTML = '<span class="chips-empty">💡 [종목 추천]에서 ☆ 별을 눌러 관심 종목을 담아두면, 여기서 클릭 한 번으로 선택할 수 있어요.</span>';
+    return;
+  }
+  el.innerHTML = '<span class="chips-lb">🌟 관심 종목</span>' + list.map(w =>
+    `<span class="chipw" data-code="${w.code}">
+       <button class="pick" title="${w.name} 선택">${w.name}</button>
+       <button class="rm" title="관심 종목에서 제거" aria-label="${w.name} 제거">×</button>
+     </span>`).join('');
+  el.querySelectorAll('.chipw').forEach(ch => {
+    const code = ch.dataset.code;
+    ch.querySelector('.pick').onclick = () => onPick(code);
+    ch.querySelector('.rm').onclick = () => {
+      const w = getWatch().find(x => x.code === code);
+      if (w) toggleWatch(code, w.name);
+    };
+  });
+}
+
+function refreshWatchUI() {
+  renderWatchChips('#port-chips', pickForPortfolio);
+  renderWatchChips('#trade-chips', pickForTrade);
+  if (DATA.screening) drawScreenTable();   // 표의 별 상태 동기화
 }
 
 /* ═══════════════════ 종목 검색 (자동완성) ═══════════════════ */
@@ -722,8 +793,17 @@ function attachSearch(inputSel, suggestSel, onPick) {
 const PORT_KEY = 'ntb_portfolio_v1';
 let portPicked = null;
 
+function pickForPortfolio(code) {
+  const info = DATA.priceMap[code];
+  if (!info) return;
+  portPicked = { code, ...info };
+  $('#port-search').value = `${info.name} (${code})`;
+  $('#port-price').focus();
+}
+
 function renderPortfolio() {
   attachSearch('#port-search', '#port-suggest', p => { portPicked = p; });
+  renderWatchChips('#port-chips', pickForPortfolio);
   $('#port-add').onclick = () => {
     const price = parseFloat($('#port-price').value);
     if (!portPicked) { alert('종목을 검색해서 선택해주세요.'); return; }
@@ -770,6 +850,14 @@ const TRADE_KEY = 'ntb_trading_v1';
 const INIT_CASH = 10000000;
 let tradePicked = null;
 
+function pickForTrade(code) {
+  const info = DATA.priceMap[code];
+  if (!info) return;
+  tradePicked = { code, ...info };
+  $('#trade-search').value = `${info.name} (${code})`;
+  $('#trade-picked').innerHTML = `선택: <b>${info.name}</b> · 체결가(종가) <b>${won(info.price)}</b>`;
+}
+
 function tradeState() { return store.get(TRADE_KEY, { cash: INIT_CASH, trades: [] }); }
 
 function holdingsOf(st) {
@@ -789,10 +877,8 @@ function holdingsOf(st) {
 }
 
 function renderTrading() {
-  attachSearch('#trade-search', '#trade-suggest', p => {
-    tradePicked = p;
-    $('#trade-picked').innerHTML = `선택: <b>${p.name}</b> · 체결가(종가) <b>${won(p.price)}</b>`;
-  });
+  attachSearch('#trade-search', '#trade-suggest', p => pickForTrade(p.code));
+  renderWatchChips('#trade-chips', pickForTrade);
   $$('#view-trade [data-q]').forEach(b => b.onclick = () => {
     const st = tradeState();
     const cur = parseInt($('#trade-amt').value) || 0;

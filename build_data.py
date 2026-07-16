@@ -196,7 +196,7 @@ def check_timing(fdr, pd, ticker):
         # 차트용 시계열 (최근 120 거래일)
         tail = df.tail(120)
         chart = {
-            "dates": [d.strftime("%m-%d") for d in tail.index],
+            "dates": [d.strftime("%Y-%m-%d") for d in tail.index],
             "close": [round(float(v)) for v in tail["Close"]],
             "ma20": [None if pd.isna(v) else round(float(v)) for v in ma20.tail(120)],
             "ma60": [None if pd.isna(v) else round(float(v)) for v in ma60.tail(120)],
@@ -401,7 +401,7 @@ def build_sample():
                 if d.weekday() >= 5:
                     continue
                 p *= math.exp(rng.gauss(0.0008, 0.02))
-                dates.append(d.strftime("%m-%d"))
+                dates.append(d.strftime("%Y-%m-%d"))
                 closes.append(round(p))
             def sma(arr, w):
                 out = []
