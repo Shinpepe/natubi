@@ -104,7 +104,7 @@ main{padding:28px 0 60px}
 .chip.none{background:var(--none-bg);color:var(--none)}
 .chip.dn{background:var(--none-bg);color:var(--down)}
 .chip.wait{background:var(--watch-bg);color:var(--watch)}
-.chip.pull{background:var(--info-bg);color:var(--down)}
+.chip.pull{background:var(--buy-bg);color:var(--buy)}
 .chip.brk{background:var(--warn-bg);color:var(--up)}
 .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.8rem;color:var(--sub);margin-bottom:12px;padding:10px 14px;background:var(--thead);border-radius:9px;border:1px solid var(--line)}
 .rec-card{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:15px 17px;margin-bottom:11px;cursor:pointer;transition:border-color .12s}
@@ -271,9 +271,19 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
     <section class="view on" id="view-home">
       <div class="grid4" id="home-metrics"></div>
       <div class="card" id="global-card" style="display:none;margin-top:18px">
-        <h2>글로벌 시장 한눈에</h2>
-        <div class="desc">해외 지수·원자재는 한국시간 새벽 마감(전일 종가) 기준입니다.</div>
+        <h2>글로벌 시장 지표</h2>
+        <div class="desc">해외 시장 지수와 원자재 지표는 전일 종가 기준입니다.</div>
         <div class="grid4" id="global-metrics"></div>
+        <details class="help" style="margin-top:14px;margin-bottom:0">
+          <summary>❓ 이 지표들을 왜 볼까요?</summary>
+          <div class="body">
+            <p><b>KOSDAQ</b> : 중소·성장 기업 중심 시장의 흐름을 보세요.</p>
+            <p><b>S&P 500 · 나스닥 · 다우</b> : 미국 투자 시장의 전체적인 흐름을 보세요.</p>
+            <p><b>달러/원</b> : 환율이 오르면 한국 투자 시장에 부담이 될 수 있습니다.</p>
+            <p><b>금</b> : 금이 오르면 주식 시장이 불안하다는 신호일 수 있습니다.</p>
+            <p><b>WTI 유가</b> : 국제 기름값이 오르면 기업과 물가에 부담이 커집니다.</p>
+          </div>
+        </details>
       </div>
       <div class="card" style="margin-top:18px">
         <h2>오늘의 한 줄</h2>
@@ -281,20 +291,21 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
         <div id="home-advice" class="advice"></div>
       </div>
       <div class="card">
-        <h2>나투비 200% 활용하는 법</h2>
+        <h2>나투비 활용법</h2>
         <div class="desc">각 메뉴를 이렇게 활용해 보세요.</div>
         <details class="help"><summary>🌐 시장 현황 — 시장의 온도를 먼저 읽으세요</summary>
-          <div class="body"><p>내 종목만 보지 말고 시장 전체의 온도와 자금 흐름을 먼저 확인하세요.</p>
+          <div class="body"><p>시장 전체의 온도와 자금 흐름을 먼저 확인하세요.</p>
           <p><b>공포-탐욕 지수</b>: 75점 이상 [극심한 탐욕]에선 분할 익절을, 25점 이하 [극심한 공포]에선 우량주 매수 기회를 포착하세요.</p>
           <p><b>섹터 트리맵</b>: 빨간색이 진하고 면적이 큰 섹터가 오늘 시장을 이끄는 주도 섹터입니다.</p></div></details>
         <details class="help"><summary>🔍 종목 추천 — 3단계 관문을 통과한 오늘의 종목</summary>
-          <div class="body"><p>나투비는 <b>① 좋은 기업(실적 흑자+성장) → ② 오르는 흐름 → ③ 살 만한 타이밍</b>, 세 관문을 전부 통과한 종목만 하루 최대 10개 추천해요.</p>
-          <p>타이밍은 두 가지 — <b>🔵 눌림목</b>(오르던 주식이 잠시 쉬는 구간에 사기), <b>🔴 신고가 돌파</b>(가장 강한 주식이 최고가를 뚫을 때 사기).</p>
+          <div class="body"><p>나투비는 <b>① 좋은 기업(실적 흑자+성장) → ② 오르는 흐름 → ③ 살 만한 타이밍</b>, 세 관문을 전부 통과한 종목만 추천해요.</p>
+          <p>타이밍 — <b>🟢 눌림목</b>(오르던 주식이 잠시 쉬는 구간), <b>🔴 신고가 돌파</b>(강한 주식이 최고가를 뚫을 때).</p>
           <p><b>이익 배수</b>: 시가총액 ÷ 영업이익. 10 이하면 버는 돈 대비 주가가 저렴한 편이에요.</p>
-          <p class="tip">Tip: 추천이 없는 날은 "오늘은 쉬어라"라는 신호! ⏳ 타이밍 대기 종목을 ☆로 담아두고 기다리세요.</p></div></details>
+          <p class="tip">Tip : 추천이 없는 날은 잠시 쉬어가세요. ⏳타이밍 대기 종목을 담아두고 기다리는 것도 좋아요.</p></div></details>
         <details class="help"><summary>📋 포트폴리오 — 매도 타이밍 감시</summary>
           <div class="body"><p>보유 종목을 등록하면 이동평균선을 분석해 상태를 알려줍니다.</p>
-          <p><b>단기 데드크로스(⚠️)</b>: 5일선이 20일선 하향 돌파 — 단기 조정의 시작일 수 있습니다. <b>중기 데드크로스(🚨)</b>: 20일선이 60일선 하향 돌파 — 추세 반전이므로 매도를 검토하세요.</p>
+          <p><b>단기 데드크로스(⚠️)</b>: 5일선이 20일선 하향 돌파 — 단기 조정의 시작일 수 있습니다.</p>
+          <p><b>중기 데드크로스(🚨)</b>: 20일선이 60일선 하향 돌파 — 추세 반전이므로 매도를 검토하세요.</p>
           <p><b>추천 손절가</b>: 변동폭(ATR) 기반으로 계산되며, 현재가가 이탈하면 즉시 매도 신호가 표시됩니다.</p></div></details>
         <details class="help"><summary>💰 모의 투자 — 리스크 없는 실전 연습</summary>
           <div class="body"><p>가상 자본 1,000만 원으로 매매 전략을 테스트하세요. 원화 금액으로 주문하면 수량이 자동 계산되고, 평단가와 실현손익이 자동 관리됩니다. 체결가는 당일 종가 기준입니다.</p></div></details>
@@ -322,6 +333,7 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
       <div class="grid2">
         <div class="card gauge-box">
           <h2 style="align-self:flex-start">시장 공포-탐욕 지수</h2>
+          <div class="desc" style="align-self:flex-start">KOSPI의 최근 흐름(평균선 대비 위치·거래량·출렁임)을 종합해 시장 분위기를 0~100점으로 나타낸 나투비 지표예요.</div>
           <svg id="gauge" viewBox="0 0 300 175" width="100%" style="max-width:340px" role="img" aria-label="공포 탐욕 게이지"></svg>
           <div class="gauge-score" id="gauge-score">–</div>
           <div class="gauge-label" id="gauge-label"></div>
@@ -331,7 +343,7 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
           <div class="desc" id="market-date"></div>
           <div id="market-advice" class="advice"></div>
           <div style="margin-top:16px">
-            <div style="font-size:.85rem;color:var(--sub)">시장 폭 (상승 <span style="color:var(--up)">■</span> / 보합 / 하락 <span style="color:var(--down)">■</span>)</div>
+            <div style="font-size:.85rem;color:var(--sub)">오늘 전체 종목 중 오른 종목(<span style="color:var(--up)">■</span>)과 내린 종목(<span style="color:var(--down)">■</span>)의 비율이에요</div>
             <div class="breadth" id="breadth-bar"></div>
             <div class="breadth-legend" id="breadth-legend"></div>
           </div>
@@ -345,18 +357,29 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
       <div class="grid2">
         <div class="card">
           <h2>달러/원 환율 추이</h2>
-          <div class="desc">환율 상승(원화 약세)은 외국인 수급에 부담이 될 수 있습니다.</div>
+          <div class="desc">환율이 오르면(원화 가치 하락) 외국인 투자자가 한국 주식을 팔고 떠나기 쉬워져, 우리 시장에 부담이 될 수 있어요.</div>
           <div id="fx-chart" style="height:230px"></div>
         </div>
         <div class="card">
           <h2>코스피 vs 나스닥</h2>
-          <div class="desc">기록 시작일을 100으로 놓고 상대 흐름을 비교합니다.</div>
+          <div class="desc">기록 시작일을 둘 다 100점으로 맞춰놓고, 이후 어느 시장의 힘이 더 좋은지 비교해요.</div>
           <div id="compare-chart" style="height:230px"></div>
         </div>
       </div>
       <div class="card">
         <h2>섹터별 자금 흐름</h2>
-        <div class="desc">박스 크기 = 시가총액 · 색 = 전일 대비 등락 (적색 상승 / 청색 하락) · 시총 상위 500종목</div>
+        <div class="desc">박스 크기 = 기업의 시가총액 | 색 = 오늘의 등락 (적색 상승 / 청색 하락) | 시총 상위 500종목</div>
+        <details class="help">
+          <summary>❓ 이 그림 어떻게 보나요?</summary>
+          <div class="body">
+            <h4>색상</h4>
+            <p><span style="color:var(--up)">빨간색</span>은 오늘 <b>오른</b> 종목, <span style="color:var(--down)">파란색</span>은 <b>내린</b> 종목이에요. 색이 진할수록 많이 움직인 거예요.</p>
+            <h4>박스 크기</h4>
+            <p>기업의 덩치(시가총액)예요. 각 구역에서 가장 큰 박스가 그 산업의 <b>대장주</b>입니다.</p>
+            <h4>이렇게 읽어보세요</h4>
+            <p>한 구역 전체가 빨갛다면 → 그 산업 전체에 돈이 몰리고 있다는 뜻. 대장주만 빨갛다면 → 지수만 버티고 있을 뿐 체감 경기는 다를 수 있어요.</p>
+          </div>
+        </details>
         <div id="treemap" style="height:560px"></div>
       </div>
     </section>
@@ -373,8 +396,9 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
             <h4>나투비는 3개의 관문을 모두 통과한 종목만 추천해요</h4>
             <p><b>1관문 · 좋은 기업인가?</b> — 사업보고서(DART) 기준 영업이익이 흑자이면서 전년보다 성장한 기업만 통과. "돈을 점점 더 잘 버는 회사"라는 뜻이에요.</p>
             <p><b>2관문 · 오르는 흐름인가?</b> — 20일 평균가가 60일 평균가 위에 있어야 통과. 아무리 좋은 기업이라도 <b>내리막길에서는 사지 않는다</b>는 원칙입니다.</p>
-            <p><b>3관문 · 지금이 살 자리인가?</b> — 아래 두 가지 매수 타이밍 중 하나에 해당해야 통과.</p>
-            <h4>🔵 눌림목 — "오르던 주식이 잠시 쉬는 구간"</h4>
+            <p><b>3관문 · 지금이 살 자리인가?</b> — 아래 두 가지 매수 타이밍 중 하나에 해당해야 통과.
+            <b>🟢 눌림목과 🔴 돌파는 둘 다 "사도 되는 자리"예요</b> — 초록은 차분하게 눌렸을 때 진입, 빨강은 강한 상승 에너지에 올라타는 진입이라는 스타일 차이일 뿐입니다.</p>
+            <h4>🟢 눌림목 — "오르던 주식이 잠시 쉬는 구간"</h4>
             <p>계단을 오르다 층계참에서 잠깐 쉬는 모습을 떠올려 보세요. 상승 흐름은 그대로인데 가격이 20일 평균선 근처까지 내려오고 과열이 식은 상태(RSI 35~55)예요. "좋은 주식을 조금 싸게 사는 자리"입니다.</p>
             <h4>🔴 신고가 돌파 — "신기록을 세우는 가장 강한 구간"</h4>
             <p>1년 최고가의 92% 이상까지 올라온 종목이, <b>오르는 날</b> 평소보다 1.5배 넘는 거래량으로 밀어붙이는 상태. 가장 강한 주식이 더 강해지는 자리예요. 내리는 날 거래량이 터진 것은 반대로 위험 신호라 제외합니다.</p>
@@ -382,6 +406,11 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
             <p><b>타이밍 대기</b>: 흐름은 좋지만 아직 살 자리가 아닌 상태 — 관심 종목에 담아두고 기다리세요. <b>하락 흐름</b>: 흐름이 꺾인 상태 — 신호가 떠도 추천하지 않아요.</p>
             <h4>➕ 골든크로스 가점</h4>
             <p>20일선이 60일선을 최근 5일 안에 뚫고 올라갔다면(골든크로스) 흐름 전환의 초기라는 뜻이라 종합점수에 가점을 줘요.</p>
+            <h4>📏 표에 나오는 용어 미니 사전</h4>
+            <p><b>RSI</b>: 최근 2주간 얼마나 과열/침체됐는지 나타내는 온도계(0~100). 70 이상은 과열, 30 이하는 얼어붙은 상태예요.
+            <b>1년 고점대비</b>: 지난 1년 최고가를 100%로 봤을 때 지금 어디쯤인지.
+            <b>거래량</b>: 평소(20일 평균)의 몇 배가 거래됐는지 — ↓ 표시는 하락하는 날 거래가 몰렸다는 경고예요.
+            <b>이익배수</b>: 시가총액 ÷ 연간 영업이익. 낮을수록 버는 돈 대비 주가가 저렴한 편(10 이하면 저평가권).</p>
             <h4>⭐ 오늘의 추천</h4>
             <p>3관문을 모두 통과한 종목을 종합점수(실적 40% + 타이밍 강도 60%) 순으로 <b>최대 10개만</b> 골라요. 조건이 엄격해서 <b>추천이 하나도 없는 날도 있는데, 그것도 "오늘은 쉬어라"는 유용한 정보</b>입니다.</p>
           </div>
@@ -401,7 +430,7 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
     <section class="view" id="view-port">
       <div class="card">
         <h2>새 종목 추가</h2>
-        <div class="desc">보유 종목을 등록하면 매 거래일 종가 기준으로 수익률과 추세 신호(데드크로스·손절가)를 분석합니다. (브라우저에 저장)</div>
+        <div class="desc">보유 종목을 등록하면 매 거래일 종가 기준으로 수익률과 추세 신호(데드크로스·손절가)를 분석합니다.</div>
         <div class="chips" id="port-chips"></div>
         <div class="grid3" style="align-items:end">
           <div class="search-box">
@@ -419,6 +448,16 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
       <div class="card">
         <h2>보유 종목 현황</h2>
         <div class="desc" id="port-date"></div>
+        <details class="help">
+          <summary>❓ 손절가·목표가·위험도가 뭔가요?</summary>
+          <div class="body">
+            <p><b>추천 손절가</b>: 여기까지 내려오면 <b>더 큰 손해를 막기 위해 파는 것을 검토</b>할 가격이에요. 이 종목의 평소 출렁임 폭과 내 매수가(-5%)를 함께 고려해 매일 다시 계산됩니다.</p>
+            <p><b>추천 목표가</b>: 평소 출렁임 폭 기준으로 <b>1차 수익 실현을 고려해볼 만한</b> 가격이에요. 무조건 팔라는 뜻이 아니라 "여기서 한 번 점검하라"는 눈금입니다.</p>
+            <p><b>위험도</b>: 이 종목이 하루에 평균 몇 % 출렁이는지예요. 높을수록 급등도 급락도 큰 종목이니 비중을 작게 가져가는 게 안전해요.</p>
+            <p><b>상태</b>: 🚨는 즉시 대응, 🚩/⚠️는 주의 깊게 지켜보기, ✅는 그대로 보유해도 좋다는 뜻이에요.</p>
+            <p class="tip">※ 추세 신호는 시가총액 상위 종목까지 계산돼요. "분석 대상 외"로 뜨는 소형주는 수익률만 표시됩니다.</p>
+          </div>
+        </details>
         <div id="port-alerts"></div>
         <div class="tbl-wrap"><table id="port-tbl"></table></div>
         <div class="empty" id="port-empty" style="display:none">등록된 보유 종목이 없습니다. 위에서 추가해 보세요.</div>
@@ -435,7 +474,16 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
       </div>
       <div class="card">
         <h2>원화로 주문하기</h2>
-        <div class="desc">매매 체결가는 최신 종가 기준입니다. 초기 자본 1,000만 원 · 기록은 브라우저에 저장됩니다.</div>
+        <div class="desc">체결가(사고파는 가격)는 최신 종가 기준입니다. 초기 자본 1,000만 원 · 기록은 브라우저에 저장됩니다.</div>
+        <details class="help">
+          <summary>❓ 처음이라면 읽어보세요 — 평단·실현손익이 뭔가요?</summary>
+          <div class="body">
+            <p><b>평단(평균 매수 단가)</b>: 같은 종목을 여러 번 샀을 때의 평균 가격이에요. 현재가가 평단보다 위면 수익, 아래면 손실 상태입니다.</p>
+            <p><b>실현손익</b>: <b>실제로 팔아서 확정된</b> 이익/손해. <b>미실현손익</b>: 아직 안 팔아서 <b>숫자로만 존재하는</b> 이익/손해예요 — 팔기 전까지는 언제든 변할 수 있어요.</p>
+            <p><b>원화 주문</b>: 몇 주를 살지 몰라도 돼요. 금액(예: 50만 원)만 입력하면 수량이 자동 계산됩니다.</p>
+            <p class="tip">Tip: 한 종목에 전 재산을 넣지 말고 나눠 담는 연습부터 해보세요. 실전에서 가장 중요한 습관이에요.</p>
+          </div>
+        </details>
         <div class="chips" id="trade-chips"></div>
         <div class="grid3" style="align-items:end">
           <div class="search-box">
@@ -532,7 +580,7 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
     <section class="view" id="view-mine">
       <div class="card">
         <h2>지뢰찾기</h2>
-        <div class="desc">시장의 지뢰를 피하는 연습이라 생각하며 잠시 쉬어가세요. (8×8 · 지뢰 10개)</div>
+        <div class="desc">시장의 지뢰를 피하는 연습이라 생각하며 잠시 쉬어가세요.</div>
         <div class="ms-bar">
           <div>🚩 남은 지뢰(예상): <b id="ms-left">10</b></div>
           <label class="toggle"><input type="checkbox" id="ms-flagmode"> 🚩 깃발 모드</label>
@@ -616,6 +664,7 @@ $$('.tab').forEach(t => t.addEventListener('click', () => {
   t.classList.add('on');
   $('#view-' + t.dataset.view).classList.add('on');
   if (t.dataset.view === 'market' && DATA.sectors.length) drawTreemap();
+  if (t.dataset.view === 'screen') ensureCharts().catch(() => {});   // 차트 미리 받아두기
 }));
 
 /* ═══════════════════ 데이터 로드 ═══════════════════ */
@@ -850,7 +899,7 @@ function drawTreemap() {
 const ST = {
   dn:   { chip: 'dn',   label: '📉 하락 흐름',   short: '하락 흐름' },
   wait: { chip: 'wait', label: '⏳ 타이밍 대기', short: '타이밍 대기' },
-  pull: { chip: 'pull', label: '🔵 눌림목',      short: '눌림목' },
+  pull: { chip: 'pull', label: '🟢 눌림목',      short: '눌림목' },
   brk:  { chip: 'brk',  label: '🔴 신고가 돌파', short: '신고가 돌파' },
 };
 let screenTab = 'rec';
@@ -872,6 +921,8 @@ function statusChip(s) {
 
 function renderScreening() {
   const sc = DATA.screening, rs = sc.results;
+  sc.analyzedN = sc.analyzedN ?? rs.length;
+  sc.recMax = sc.recMax ?? 10;
   const recs = rs.filter(r => r.rec);
   const pullN = recs.filter(r => r.status === 'pull').length;
   const brkN = recs.filter(r => r.status === 'brk').length;
@@ -880,8 +931,8 @@ function renderScreening() {
 
   $('#screen-metrics').innerHTML = `
     <div class="metric"><div class="lb">⭐ 오늘의 추천</div><div class="val">${recs.length}종목</div>
-      <div class="sub">🔵 눌림목 ${pullN} · 🔴 돌파 ${brkN}</div></div>
-    <div class="metric"><div class="lb">🏢 실적 성장주 (기업 풀)</div><div class="val">${poolN}종목</div>
+      <div class="sub">🟢 눌림목 ${pullN} · 🔴 돌파 ${brkN}</div></div>
+    <div class="metric"><div class="lb">🏢 실적 성장주</div><div class="val">${poolN}종목</div>
       <div class="sub">${sc.targetYear}년 실적 검증 통과</div></div>
     <div class="metric"><div class="lb">📈 상승 흐름 종목</div><div class="val">${upN}종목</div>
       <div class="sub">20일선 &gt; 60일선 유지 중</div></div>
@@ -890,7 +941,7 @@ function renderScreening() {
 
   $('#all-tab-btn').textContent = `📊 상위 ${sc.analyzedN}종목`;
   $('#screen-desc').textContent = sc.hasFundamentals
-    ? `좋은 기업(${sc.targetYear}년 실적) → 상승 흐름 → 매수 타이밍(셋업), 3단계를 모두 통과한 상위 ${sc.recMax}종목을 추천합니다 · 기준 ${sc.updated}`
+    ? `좋은 기업(${sc.targetYear}년 실적) → 상승 흐름 → 매수 타이밍, 3단계를 모두 통과한 상위 ${sc.recMax}종목을 추천합니다 · 기준 ${sc.updated}`
     : `⚠️ DART 키 미설정 — 실적 관문 없이 기술적 분석만 수행되었습니다 · 기준 ${sc.updated}`;
 
   $$('#screen-subtabs .subtab').forEach(b => b.onclick = () => {
@@ -946,7 +997,7 @@ function drawTable(kind) {
   const y = sc.targetYear;
   $('#screen-legend').innerHTML = `<div class="legend">
     <span>🔴 <b>신고가 돌파</b> = 가장 강할 때 사기</span>
-    <span>🔵 <b>눌림목</b> = 쉬어갈 때 사기</span>
+    <span>🟢 <b>눌림목</b> = 쉬어갈 때 사기</span>
     <span>⏳ <b>타이밍 대기</b> = 흐름은 좋지만 아직</span>
     <span>📉 <b>하락 흐름</b> = 지금은 피하기</span>
   </div>`;
@@ -961,7 +1012,7 @@ function drawTable(kind) {
   } else {
     rows = sc.results;
     COLS = [['name', '종목명', ''], ['code', '코드', ''], ['price', '현재가', 'num'],
-            ['diff', '전일대비', 'num'], ['rsi', 'RSI', 'num'], ['high52Ratio', '52주고점比', 'num'],
+            ['diff', '전일대비', 'num'], ['rsi', 'RSI', 'num'], ['high52Ratio', '1년 고점대비', 'num'],
             ['volRatio', '거래량', 'num'], ['fundPass', '실적', ''],
             ['score', '종합점수', 'num'], ['status', '오늘의 상태', '']];
   }
@@ -1014,10 +1065,12 @@ function bindStars() {
   });
 }
 
+const STATUS_ORDER = { brk: 0, pull: 1, wait: 2, dn: 3 };
 function sortRows(rs) {
   const { key, dir } = screenSort;
   return rs.slice().sort((a, b) => {
-    const va = a[key], vb = b[key];
+    let va = a[key], vb = b[key];
+    if (key === 'status') { va = STATUS_ORDER[va] ?? 9; vb = STATUS_ORDER[vb] ?? 9; }
     if (va == null && vb == null) return 0;
     if (va == null) return 1;
     if (vb == null) return -1;
@@ -1046,13 +1099,8 @@ function showDetail(code) {
   const news = (DATA.news || {})[code];
   let newsHtml = '';
   if (news && news.items.length) {
-    const [p, n, u] = news.senti;
-    const mood = p > n ? `🟢 긍정 우세 (긍정 ${p} · 부정 ${n} · 중립 ${u})`
-      : n > p ? `🔻 부정 우세 (긍정 ${p} · 부정 ${n} · 중립 ${u})`
-      : `⚪ 중립 (긍정 ${p} · 부정 ${n} · 중립 ${u})`;
     newsHtml = `<div style="margin-top:14px">
       <b style="font-size:.94rem">📰 최근 뉴스</b>
-      <span style="font-size:.8rem;color:var(--sub);margin-left:8px">${mood} · 제목 키워드 기반 참고용</span>
       <div class="news-list">${news.items.map(([t, s, d, l]) =>
         `<a class="news-item" href="${l}" target="_blank" rel="noopener">· ${t}<span class="meta">${s} ${d}</span></a>`).join('')}
       </div></div>`;
@@ -1080,16 +1128,20 @@ function showDetail(code) {
       ${bdg(r.high52Ratio >= 92, `52주고점 ${(r.high52Ratio ?? 0).toFixed(0)}%`)}
     </div>
     ${newsHtml}
-    <div id="detail-chart" style="height:400px;margin-top:10px"><div class="empty">📉 차트 불러오는 중…</div></div>`;
+    <div id="detail-chart" style="margin-top:10px"><div class="empty">📉 차트 불러오는 중…</div></div>`;
   $('#detail-watch').onclick = () => { toggleWatch(r.code, r.name); showDetail(code); };
   drawStockChart(code, 'detail-chart');
   d.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
+let chartToken = 0;   // 로딩 중 다른 종목을 열면 이전 요청 결과는 버림
 async function drawStockChart(code, el) {
+  const my = ++chartToken;
   let c;
   try { c = (await ensureCharts())[code]; }
-  catch (e) { $('#' + el).innerHTML = '<div class="empty">차트 데이터를 불러오지 못했습니다.</div>'; return; }
+  catch (e) { $('#' + el).innerHTML = '<div class="empty">차트 데이터를 불러오지 못했습니다. 데이터 갱신 후 다시 시도해 주세요.</div>'; return; }
+  if (my !== chartToken) return;
+  if (!document.getElementById(el)) return;
   if (!c) { $('#' + el).innerHTML = '<div class="empty">차트 데이터가 없습니다.</div>'; return; }
   const traces = [
     { x: c.dates, y: c.close, name: '종가', line: { color: themeC('--ink'), width: 1.4 } },
@@ -1106,6 +1158,7 @@ async function drawStockChart(code, el) {
   if (gx.length) traces.push({ x: gx, y: gy, mode: 'markers', name: '골든크로스',
     marker: { symbol: 'triangle-up', size: 13, color: '#D94F4F' } });
   Plotly.newPlot(el, traces, baseLayout({
+    height: 400,
     margin: { t: 10, l: 50, r: 10, b: 20 },
     legend: { orientation: 'h', y: 1.12 },
     dragmode: 'pan', hovermode: 'x unified',
@@ -1141,7 +1194,7 @@ function renderWatchChips(elId, onPick) {
   if (!el) return;
   const list = getWatch();
   if (!list.length) {
-    el.innerHTML = '<span class="chips-empty">💡 [종목 추천]에서 ☆ 별을 눌러 관심 종목을 담아두면, 여기서 클릭 한 번으로 선택할 수 있어요.</span>';
+    el.innerHTML = '<span class="chips-empty">💡 [종목 추천]에서 ☆ 별을 눌러 관심 종목을 담아두면, 여기서 선택할 수 있어요.</span>';
     return;
   }
   el.innerHTML = '<span class="chips-lb">🌟 관심 종목</span>' + list.map(w =>
