@@ -28,7 +28,7 @@ jobs:
       - name: 데이터 수집 및 분석
         env:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
-          TOP_N: '100'
+          TOP_N: '300'
         run: python build_data.py
 
       - name: 변경사항 커밋
