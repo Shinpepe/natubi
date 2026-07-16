@@ -102,6 +102,22 @@ main{padding:28px 0 60px}
 .chip.watch{background:var(--watch-bg);color:var(--watch)}
 .chip.warn{background:var(--warn-bg);color:var(--warn)}
 .chip.none{background:var(--none-bg);color:var(--none)}
+.chip.dn{background:var(--none-bg);color:var(--down)}
+.chip.wait{background:var(--watch-bg);color:var(--watch)}
+.chip.pull{background:var(--info-bg);color:var(--down)}
+.chip.brk{background:var(--warn-bg);color:var(--up)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.8rem;color:var(--sub);margin-bottom:12px;padding:10px 14px;background:var(--thead);border-radius:9px;border:1px solid var(--line)}
+.rec-card{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:15px 17px;margin-bottom:11px;cursor:pointer;transition:border-color .12s}
+.rec-card:hover{border-color:var(--ink)}
+.rec-rank{font-family:'Gowun Batang',serif;font-size:1.35rem;font-weight:700;color:var(--stamp);min-width:34px}
+.rec-top{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.rec-name{font-weight:700;font-size:1.03rem}
+.rec-reason{font-size:.86rem;color:var(--sub);margin-top:7px;line-height:1.55}
+.rec-right{margin-left:auto;text-align:right;font-size:.86rem}
+.news-list{margin-top:8px}
+.news-item{display:block;padding:8px 10px;border-radius:8px;text-decoration:none;color:var(--ink);font-size:.87rem;line-height:1.45}
+.news-item:hover{background:var(--hover)}
+.news-item .meta{color:var(--sub);font-size:.76rem;margin-left:6px}
 
 /* 관심 종목 (장바구니) */
 .star{border:none;background:none;font-size:1.12rem;line-height:1;padding:2px 4px;color:#C2C9D2;border-radius:6px}
@@ -271,11 +287,11 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
           <div class="body"><p>내 종목만 보지 말고 시장 전체의 온도와 자금 흐름을 먼저 확인하세요.</p>
           <p><b>공포-탐욕 지수</b>: 75점 이상 [극심한 탐욕]에선 분할 익절을, 25점 이하 [극심한 공포]에선 우량주 매수 기회를 포착하세요.</p>
           <p><b>섹터 트리맵</b>: 빨간색이 진하고 면적이 큰 섹터가 오늘 시장을 이끄는 주도 섹터입니다.</p></div></details>
-        <details class="help"><summary>🔍 종목 추천 — 돈 잘 버는 주식 찾기</summary>
-          <div class="body"><p>실제 재무제표(DART)와 차트를 결합해 종목을 선별합니다.</p>
-          <p><b>이익 배수</b>: 시가총액 ÷ 영업이익. <b>10 이하</b>면 버는 돈에 비해 주가가 저렴한 저평가 우량주, 20 이상이면 기대감이 많이 반영된 구간입니다.</p>
-          <p><b>성장 가속(🚀)</b>: 작년보다 올해 성장률이 더 높아진, 주가 탄력이 가장 강한 상태. <b>연속 성장(📈)</b>: 2년 이상 이익이 늘어나는 탄탄한 기업.</p>
-          <p class="tip">Tip: 이익 배수 10 이하 + 성장 가속(🚀) 종목에 주목하고, ☆를 눌러 관심 종목에 담아두세요.</p></div></details>
+        <details class="help"><summary>🔍 종목 추천 — 3단계 관문을 통과한 오늘의 종목</summary>
+          <div class="body"><p>나투비는 <b>① 좋은 기업(실적 흑자+성장) → ② 오르는 흐름 → ③ 살 만한 타이밍</b>, 세 관문을 전부 통과한 종목만 하루 최대 10개 추천해요.</p>
+          <p>타이밍은 두 가지 — <b>🔵 눌림목</b>(오르던 주식이 잠시 쉬는 구간에 사기), <b>🔴 신고가 돌파</b>(가장 강한 주식이 최고가를 뚫을 때 사기).</p>
+          <p><b>이익 배수</b>: 시가총액 ÷ 영업이익. 10 이하면 버는 돈 대비 주가가 저렴한 편이에요.</p>
+          <p class="tip">Tip: 추천이 없는 날은 "오늘은 쉬어라"라는 신호! ⏳ 타이밍 대기 종목을 ☆로 담아두고 기다리세요.</p></div></details>
         <details class="help"><summary>📋 포트폴리오 — 매도 타이밍 감시</summary>
           <div class="body"><p>보유 종목을 등록하면 이동평균선을 분석해 상태를 알려줍니다.</p>
           <p><b>단기 데드크로스(⚠️)</b>: 5일선이 20일선 하향 돌파 — 단기 조정의 시작일 수 있습니다. <b>중기 데드크로스(🚨)</b>: 20일선이 60일선 하향 돌파 — 추세 반전이므로 매도를 검토하세요.</p>
@@ -352,29 +368,31 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
         <h2>스크리닝 결과</h2>
         <div class="desc" id="screen-desc"></div>
         <details class="help">
-          <summary>💡 타이밍 지표 설명 보기 — 골든크로스 / 거래량 / RSI / 52주 신고가</summary>
+          <summary>💡 추천 방식 이해하기 — 3단계 관문과 상태 라벨</summary>
           <div class="body">
-            <h4>📈 골든크로스</h4>
-            <p>20일 이동평균선이 60일선을 <b>아래에서 위로 돌파</b>한 신호. 상승 모멘텀이 강해지고 있다는 뜻입니다. (기준: 최근 5거래일 이내 발생)</p>
-            <p class="tip">⚠️ 거래량 없이 발생한 골든크로스는 신뢰도가 낮을 수 있습니다.</p>
-            <h4>📊 거래량 급증</h4>
-            <p>당일 거래량이 20일 평균의 <b>150% 이상</b>. 기관·외국인이 움직이거나 시장이 뉴스에 반응하고 있다는 신호입니다.</p>
-            <p class="tip">⚠️ 상승 중 급증은 긍정적, 하락 중 급증은 매도 압력 신호일 수 있습니다.</p>
-            <h4>🔋 RSI (상대강도지수)</h4>
-            <p>최근 14일 상승·하락 폭으로 과열/과매도를 0~100으로 표시. <b>70 이상</b>은 과열, <b>30~55</b>는 과매도 탈출 후 상승 초입(매수 신호 구간), <b>30 이하</b>는 극단적 과매도입니다.</p>
-            <h4>🏔️ 52주 신고가 근접</h4>
-            <p>현재가가 1년 최고점의 <b>90% 이상</b>. 강한 상승 모멘텀 구간이며, 신고가 돌파 직전은 저항이 가장 약해지는 구간입니다.</p>
-            <h4>⭐ 슈퍼픽 / 매수신호 등급</h4>
-            <p>실적 필터(DART 영업이익)와 타이밍 필터(위 4개 중 2개 이상)를 <b>모두 통과</b>한 종목이 슈퍼픽입니다. 종합점수 = 장기점수 50% + 단기점수 50%.</p>
+            <h4>나투비는 3개의 관문을 모두 통과한 종목만 추천해요</h4>
+            <p><b>1관문 · 좋은 기업인가?</b> — 사업보고서(DART) 기준 영업이익이 흑자이면서 전년보다 성장한 기업만 통과. "돈을 점점 더 잘 버는 회사"라는 뜻이에요.</p>
+            <p><b>2관문 · 오르는 흐름인가?</b> — 20일 평균가가 60일 평균가 위에 있어야 통과. 아무리 좋은 기업이라도 <b>내리막길에서는 사지 않는다</b>는 원칙입니다.</p>
+            <p><b>3관문 · 지금이 살 자리인가?</b> — 아래 두 가지 매수 타이밍 중 하나에 해당해야 통과.</p>
+            <h4>🔵 눌림목 — "오르던 주식이 잠시 쉬는 구간"</h4>
+            <p>계단을 오르다 층계참에서 잠깐 쉬는 모습을 떠올려 보세요. 상승 흐름은 그대로인데 가격이 20일 평균선 근처까지 내려오고 과열이 식은 상태(RSI 35~55)예요. "좋은 주식을 조금 싸게 사는 자리"입니다.</p>
+            <h4>🔴 신고가 돌파 — "신기록을 세우는 가장 강한 구간"</h4>
+            <p>1년 최고가의 92% 이상까지 올라온 종목이, <b>오르는 날</b> 평소보다 1.5배 넘는 거래량으로 밀어붙이는 상태. 가장 강한 주식이 더 강해지는 자리예요. 내리는 날 거래량이 터진 것은 반대로 위험 신호라 제외합니다.</p>
+            <h4>⏳ 타이밍 대기 / 📉 하락 흐름</h4>
+            <p><b>타이밍 대기</b>: 흐름은 좋지만 아직 살 자리가 아닌 상태 — 관심 종목에 담아두고 기다리세요. <b>하락 흐름</b>: 흐름이 꺾인 상태 — 신호가 떠도 추천하지 않아요.</p>
+            <h4>➕ 골든크로스 가점</h4>
+            <p>20일선이 60일선을 최근 5일 안에 뚫고 올라갔다면(골든크로스) 흐름 전환의 초기라는 뜻이라 종합점수에 가점을 줘요.</p>
+            <h4>⭐ 오늘의 추천</h4>
+            <p>3관문을 모두 통과한 종목을 종합점수(실적 40% + 타이밍 강도 60%) 순으로 <b>최대 10개만</b> 골라요. 조건이 엄격해서 <b>추천이 하나도 없는 날도 있는데, 그것도 "오늘은 쉬어라"는 유용한 정보</b>입니다.</p>
           </div>
         </details>
         <div class="subtabs" id="screen-subtabs">
-          <button class="subtab on" data-f="all">전체</button>
-          <button class="subtab" data-f="super">⭐ 슈퍼픽</button>
+          <button class="subtab on" data-f="rec">⭐ 오늘의 추천</button>
           <button class="subtab" data-f="fund">🏢 실적 성장주</button>
-          <button class="subtab" data-f="timing">⏰ 타이밍 신호</button>
+          <button class="subtab" data-f="all" id="all-tab-btn">📊 상위 300종목</button>
         </div>
-        <div class="tbl-wrap"><table id="screen-tbl"></table></div>
+        <div id="screen-legend"></div>
+        <div id="screen-body"></div>
         <div id="screen-detail" style="display:none;margin-top:16px;border-top:1px dashed var(--line);padding-top:16px"></div>
       </div>
     </section>
@@ -621,6 +639,9 @@ async function init() {
     try {
       DATA.history = (await loadJSON('history.json')).rows || [];
     } catch (e) { DATA.history = []; }
+    try {
+      DATA.news = (await loadJSON('news.json')).items || {};
+    } catch (e) { DATA.news = {}; }
     DATA.market = market;
     DATA.prices = prices.rows;
     prices.rows.forEach(r => DATA.priceMap[r[0]] = { name: r[1], price: r[2], chg: r[3] });
@@ -668,7 +689,7 @@ function adviceFor(score) {
 function renderHome() {
   const m = DATA.market, sc = DATA.screening;
   const adv = adviceFor(m.score);
-  const superCnt = sc.results.filter(r => r.fundPass && r.timingPass).length;
+  const recCnt = sc.results.filter(r => r.rec).length;
   const kospiHtml = m.kospi
     ? `<div class="val">${fmt2(m.kospi.close)}</div><div class="sub ${pctCls(m.kospi.change)}">${m.kospi.change > 0 ? '▲' : m.kospi.change < 0 ? '▼' : '–'} ${Math.abs(m.kospi.change)}%</div>`
     : '<div class="val">–</div>';
@@ -676,7 +697,7 @@ function renderHome() {
     <div class="metric"><div class="lb">시장 온도</div><div class="val" style="color:${adv.color}">${m.score}점</div><div class="sub">${adv.label}</div></div>
     <div class="metric"><div class="lb">KOSPI</div>${kospiHtml}</div>
     <div class="metric"><div class="lb">상승 / 하락</div><div class="val"><span class="red">${fmt(m.breadth.up)}</span> <span style="color:var(--line)">/</span> <span class="blue">${fmt(m.breadth.down)}</span></div><div class="sub">보합 ${fmt(m.breadth.flat)}</div></div>
-    <div class="metric"><div class="lb">오늘의 슈퍼픽</div><div class="val">${superCnt}종목</div><div class="sub">실적 + 타이밍 동시 충족</div></div>`;
+    <div class="metric"><div class="lb">⭐ 오늘의 추천</div><div class="val">${recCnt}종목</div><div class="sub">실적·흐름·타이밍 모두 충족</div></div>`;
   $('#home-advice').innerHTML = adv.html;
 
   // 글로벌 지표 타일
@@ -826,37 +847,171 @@ function drawTreemap() {
 }
 
 /* ═══════════════════ 종목 추천 ═══════════════════ */
-const GRADE_CLS = g => g.includes('강한 매수') || g.includes('매수 검토') ? 'buy'
-  : g.includes('관망') ? 'watch' : g.includes('주의') ? 'warn' : 'none';
+const ST = {
+  dn:   { chip: 'dn',   label: '📉 하락 흐름',   short: '하락 흐름' },
+  wait: { chip: 'wait', label: '⏳ 타이밍 대기', short: '타이밍 대기' },
+  pull: { chip: 'pull', label: '🔵 눌림목',      short: '눌림목' },
+  brk:  { chip: 'brk',  label: '🔴 신고가 돌파', short: '신고가 돌파' },
+};
+let screenTab = 'rec';
+let screenSort = { key: 'score', dir: -1 };
+let CHARTS = null;   // charts.json은 상세를 열 때 1회만 지연 로드
 
-let screenFilter = 'all';
-let screenSort = { key: 'totalScore', dir: -1 };   // 기본: 종합점수 내림차순
+async function ensureCharts() {
+  if (CHARTS) return CHARTS;
+  const res = await fetch('data/charts.json?v=' + Date.now());
+  if (!res.ok) throw new Error('charts');
+  CHARTS = (await res.json()).charts || {};
+  return CHARTS;
+}
+
+function statusChip(s) {
+  const t = ST[s] || ST.wait;
+  return `<span class="chip ${t.chip}">${t.label}</span>`;
+}
 
 function renderScreening() {
-  const sc = DATA.screening;
-  const rs = sc.results;
-  const supers = rs.filter(r => r.fundPass && r.timingPass);
-  const strong = rs.filter(r => r.grade.includes('강한 매수')).length;
-  const review = rs.filter(r => r.grade.includes('매수 검토')).length;
+  const sc = DATA.screening, rs = sc.results;
+  const recs = rs.filter(r => r.rec);
+  const pullN = recs.filter(r => r.status === 'pull').length;
+  const brkN = recs.filter(r => r.status === 'brk').length;
+  const poolN = rs.filter(r => r.fundPass).length;
+  const upN = rs.filter(r => r.trend).length;
 
   $('#screen-metrics').innerHTML = `
-    <div class="metric"><div class="lb">스크리닝 통과</div><div class="val">${rs.length}건</div><div class="sub">시총 상위 종목 대상</div></div>
-    <div class="metric"><div class="lb">🟢 강한 매수</div><div class="val">${strong}건</div></div>
-    <div class="metric"><div class="lb">🟢 매수 검토</div><div class="val">${review}건</div></div>
-    <div class="metric"><div class="lb">⭐ 슈퍼픽</div><div class="val">${supers.length}건</div><div class="sub">실적+타이밍 동시 충족</div></div>`;
+    <div class="metric"><div class="lb">⭐ 오늘의 추천</div><div class="val">${recs.length}종목</div>
+      <div class="sub">🔵 눌림목 ${pullN} · 🔴 돌파 ${brkN}</div></div>
+    <div class="metric"><div class="lb">🏢 실적 성장주 (기업 풀)</div><div class="val">${poolN}종목</div>
+      <div class="sub">${sc.targetYear}년 실적 검증 통과</div></div>
+    <div class="metric"><div class="lb">📈 상승 흐름 종목</div><div class="val">${upN}종목</div>
+      <div class="sub">20일선 &gt; 60일선 유지 중</div></div>
+    <div class="metric"><div class="lb">🔍 분석 대상</div><div class="val">${sc.analyzedN}종목</div>
+      <div class="sub">시가총액 상위 기준</div></div>`;
 
+  $('#all-tab-btn').textContent = `📊 상위 ${sc.analyzedN}종목`;
   $('#screen-desc').textContent = sc.hasFundamentals
-    ? `${sc.targetYear}년 사업보고서(DART) 실적 + 기술적 지표 2단계 필터 · 기준 ${sc.updated}`
-    : `⚠️ DART 키 미설정 — 기술적 지표만으로 분석되었습니다 · 기준 ${sc.updated}`;
+    ? `좋은 기업(${sc.targetYear}년 실적) → 상승 흐름 → 매수 타이밍(셋업), 3단계를 모두 통과한 상위 ${sc.recMax}종목을 추천합니다 · 기준 ${sc.updated}`
+    : `⚠️ DART 키 미설정 — 실적 관문 없이 기술적 분석만 수행되었습니다 · 기준 ${sc.updated}`;
 
   $$('#screen-subtabs .subtab').forEach(b => b.onclick = () => {
     $$('#screen-subtabs .subtab').forEach(x => x.classList.remove('on'));
     b.classList.add('on');
-    screenFilter = b.dataset.f;
+    screenTab = b.dataset.f;
+    screenSort = { key: 'score', dir: -1 };
     $('#screen-detail').style.display = 'none';
     drawScreenTable();
   });
   drawScreenTable();
+}
+
+function drawScreenTable() {
+  if (screenTab === 'rec') drawRecTab();
+  else if (screenTab === 'fund') drawTable('fund');
+  else drawTable('all');
+}
+
+/* ── ⭐ 오늘의 추천 탭: 순위 카드 ── */
+function drawRecTab() {
+  $('#screen-legend').innerHTML = '';
+  const recs = DATA.screening.results.filter(r => r.rec)
+    .sort((a, b) => a.rank - b.rank);
+  if (!recs.length) {
+    $('#screen-body').innerHTML = `<div class="empty">오늘은 3단계 조건(좋은 기업 · 상승 흐름 · 매수 타이밍)을
+      모두 충족한 종목이 없습니다.<br>억지로 매수할 필요는 없어요 — <b>좋은 자리가 나올 때까지 기다리는 것도 전략</b>입니다.</div>`;
+    return;
+  }
+  $('#screen-body').innerHTML = recs.map(r => {
+    const w = isWatched(r.code);
+    return `<div class="rec-card" data-code="${r.code}">
+      <div class="rec-top">
+        <span class="rec-rank">${r.rank}</span>
+        <span class="rec-name">${r.name} <span class="mono" style="color:var(--sub);font-weight:400">${r.code}</span></span>
+        ${statusChip(r.status)}
+        <button class="star ${w ? 'on' : ''}" data-w="${r.code}" data-n="${r.name}">${w ? '★' : '☆'}</button>
+        <div class="rec-right">
+          <div><b>${won(r.price)}</b> <span class="${pctCls(r.diff)}">${signWon(r.diff)}</span></div>
+          <div style="color:var(--sub)">종합점수 <b style="color:var(--ink)">${r.score}</b></div>
+        </div>
+      </div>
+      <div class="rec-reason">💬 ${r.reason}${r.gcRecent ? ` <b style="color:var(--buy)">+골든크로스(${r.gcDate})</b>` : ''}</div>
+    </div>`;
+  }).join('');
+  $$('#screen-body .rec-card').forEach(c => c.onclick = () => showDetail(c.dataset.code));
+  bindStars();
+}
+
+/* ── 표 탭 (실적 성장주 / 상위 300) ── */
+function drawTable(kind) {
+  const sc = DATA.screening;
+  const y = sc.targetYear;
+  $('#screen-legend').innerHTML = `<div class="legend">
+    <span>🔴 <b>신고가 돌파</b> = 가장 강할 때 사기</span>
+    <span>🔵 <b>눌림목</b> = 쉬어갈 때 사기</span>
+    <span>⏳ <b>타이밍 대기</b> = 흐름은 좋지만 아직</span>
+    <span>📉 <b>하락 흐름</b> = 지금은 피하기</span>
+  </div>`;
+
+  let rows, COLS;
+  if (kind === 'fund') {
+    rows = sc.results.filter(r => r.fundPass);
+    COLS = [['name', '종목명', ''], ['code', '코드', ''], ['price', '현재가', 'num'],
+            ['multiple', '이익배수', 'num'], ['growthCurr', `${y}년 성장률`, 'num'],
+            ['opProfit', '영업이익(억)', 'num'], ['trait', '성장특성', ''],
+            ['score', '종합점수', 'num'], ['status', '오늘의 상태', '']];
+  } else {
+    rows = sc.results;
+    COLS = [['name', '종목명', ''], ['code', '코드', ''], ['price', '현재가', 'num'],
+            ['diff', '전일대비', 'num'], ['rsi', 'RSI', 'num'], ['high52Ratio', '52주고점比', 'num'],
+            ['volRatio', '거래량', 'num'], ['fundPass', '실적', ''],
+            ['score', '종합점수', 'num'], ['status', '오늘의 상태', '']];
+  }
+  rows = sortRows(rows);
+  if (!rows.length) {
+    $('#screen-body').innerHTML = '<div class="empty">해당하는 종목이 없습니다.</div>';
+    return;
+  }
+  const arrow = k => screenSort.key === k ? (screenSort.dir < 0 ? ' ▼' : ' ▲') : '';
+  let h = `<div class="tbl-wrap"><table><thead><tr><th title="관심 종목 담기">🌟</th>
+    ${COLS.map(([k, lb, cls]) => `<th class="sortable ${cls}" data-k="${k}" title="클릭하여 정렬">${lb}${arrow(k)}</th>`).join('')}
+  </tr></thead><tbody>`;
+  rows.forEach(r => {
+    const w = isWatched(r.code);
+    const cell = (k, cls) => {
+      let v = r[k];
+      if (k === 'price') v = v != null ? won(v) : '–';
+      else if (k === 'diff') v = v != null ? `<span class="${pctCls(r.diff)}">${signWon(v)}</span>` : '–';
+      else if (k === 'multiple') v = v ?? '–';
+      else if (k === 'opProfit') v = v != null ? fmt(v) : '–';
+      else if (k === 'rsi') v = v != null ? v.toFixed(0) : '–';
+      else if (k === 'high52Ratio') v = v != null ? v.toFixed(0) + '%' : '–';
+      else if (k === 'volRatio') v = v != null ? v.toFixed(1) + 'x' + (r.upDay ? '' : '↓') : '–';
+      else if (k === 'fundPass') v = v ? '✅' : '–';
+      else if (k === 'status') v = statusChip(r.status);
+      else if (v == null) v = '–';
+      return `<td class="${cls}">${v}</td>`;
+    };
+    h += `<tr class="click" data-code="${r.code}">
+      <td><button class="star ${w ? 'on' : ''}" data-w="${r.code}" data-n="${r.name}">${w ? '★' : '☆'}</button></td>
+      ${COLS.map(([k, , cls]) => k === 'name' ? `<td><b>${r.name}${r.rec ? ' ⭐' : ''}</b></td>`
+        : k === 'code' ? `<td class="mono">${r.code}</td>` : cell(k, cls)).join('')}
+    </tr>`;
+  });
+  $('#screen-body').innerHTML = h + '</tbody></table></div>';
+  $$('#screen-body tr.click').forEach(tr => tr.onclick = () => showDetail(tr.dataset.code));
+  $$('#screen-body th.sortable').forEach(th => th.onclick = () => {
+    const k = th.dataset.k;
+    if (screenSort.key === k) screenSort.dir *= -1;
+    else screenSort = { key: k, dir: -1 };
+    drawScreenTable();
+  });
+  bindStars();
+}
+
+function bindStars() {
+  $$('#screen-body .star').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    toggleWatch(b.dataset.w, b.dataset.n);
+  });
 }
 
 function sortRows(rs) {
@@ -864,102 +1019,77 @@ function sortRows(rs) {
   return rs.slice().sort((a, b) => {
     const va = a[key], vb = b[key];
     if (va == null && vb == null) return 0;
-    if (va == null) return 1;   // 값 없는 행은 정렬 방향과 무관하게 아래로
+    if (va == null) return 1;
     if (vb == null) return -1;
     if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * dir;
+    if (typeof va === 'boolean') return ((va ? 1 : 0) - (vb ? 1 : 0)) * dir;
     return String(va).localeCompare(String(vb), 'ko') * dir;
   });
 }
 
-function drawScreenTable() {
-  const rs = sortRows(DATA.screening.results.filter(r =>
-    screenFilter === 'super' ? r.fundPass && r.timingPass :
-    screenFilter === 'fund' ? r.fundPass :
-    screenFilter === 'timing' ? r.timingPass : true
-  ));
-
-  if (!rs.length) {
-    $('#screen-tbl').innerHTML = '<tbody><tr><td class="empty">조건을 충족하는 종목이 없습니다.</td></tr></tbody>';
-    return;
-  }
-  const COLS = [
-    ['name', '종목명', ''], ['code', '코드', ''], ['price', '현재가', 'num'],
-    ['diff', '전일대비', 'num'], ['multiple', '이익배수', 'num'], ['trait', '성장특성', ''],
-    ['sigCount', '신호', 'num'], ['totalScore', '종합점수', 'num'], ['grade', '매수신호', ''],
-  ];
-  const arrow = k => screenSort.key === k ? (screenSort.dir < 0 ? ' ▼' : ' ▲') : '';
-  let html = `<thead><tr>
-    <th title="관심 종목 담기">🌟</th>
-    ${COLS.map(([k, lb, cls]) =>
-      `<th class="sortable ${cls}" data-k="${k}" title="클릭하여 정렬">${lb}${arrow(k)}</th>`).join('')}
-  </tr></thead><tbody>`;
-  rs.forEach(r => {
-    const w = isWatched(r.code);
-    html += `<tr class="click" data-code="${r.code}">
-      <td><button class="star ${w ? 'on' : ''}" data-w="${r.code}" data-n="${r.name}"
-        title="${w ? '관심 종목에서 제거' : '관심 종목에 담기'}">${w ? '★' : '☆'}</button></td>
-      <td><b>${r.name}</b></td><td class="mono">${r.code}</td>
-      <td class="num">${r.price != null ? won(r.price) : '–'}</td>
-      <td class="num ${pctCls(r.diff || 0)}">${r.diff != null ? signWon(r.diff) : '–'}</td>
-      <td class="num">${r.multiple ?? '–'}</td><td>${r.trait ?? '–'}</td>
-      <td class="num">${r.sigCount ?? 0}/4</td><td class="num"><b>${r.totalScore}</b></td>
-      <td><span class="chip ${GRADE_CLS(r.grade)}">${r.grade}</span></td></tr>`;
-  });
-  $('#screen-tbl').innerHTML = html + '</tbody>';
-  $$('#screen-tbl tr.click').forEach(tr => tr.onclick = () => showDetail(tr.dataset.code));
-  $$('#screen-tbl .star').forEach(b => b.onclick = e => {
-    e.stopPropagation();                       // 행 클릭(상세 열기)과 분리
-    toggleWatch(b.dataset.w, b.dataset.n);
-  });
-  $$('#screen-tbl th.sortable').forEach(th => th.onclick = () => {
-    const k = th.dataset.k;
-    if (screenSort.key === k) screenSort.dir *= -1;   // 같은 컬럼 재클릭 → 방향 반전
-    else screenSort = { key: k, dir: -1 };
-    drawScreenTable();
-  });
-}
-
+/* ── 상세 패널 (근거 + 실적 + 뉴스 + 차트) ── */
 function showDetail(code) {
   const r = DATA.screening.results.find(x => x.code === code);
   if (!r) return;
   lastDetailCode = code;
-  const bdg = (ok, txt) => `<span class="bdg ${ok ? 'ok' : ''}">${ok ? '✅' : '❌'} ${txt}</span>`;
   const y = DATA.screening.targetYear;
+  const bdg = (ok, txt) => `<span class="bdg ${ok ? 'ok' : ''}">${ok ? '✅' : '❌'} ${txt}</span>`;
+
   const fundHtml = r.fundPass ? `
     <div class="hold-grid" style="grid-template-columns:repeat(4,1fr)">
       <div>이익배수<br><b>${r.multiple}</b></div>
       <div>${y}년 영업이익<br><b>${fmt(r.opProfit)}억</b></div>
       <div>성장률(당해/전년)<br><b>${r.growthCurr} / ${r.growthPrev}</b></div>
-      <div>장기점수<br><b>${r.fundScore}점</b></div>
-    </div>` : '<div class="desc">실적 필터 미통과 또는 미분석 종목입니다.</div>';
+      <div>실적점수<br><b>${r.fundScore}점</b></div>
+    </div>` : '<div class="desc">아직 실적 검증(흑자 + 성장)을 통과하지 못한 종목입니다. 추천 대상에서는 제외돼요.</div>';
+
+  const news = (DATA.news || {})[code];
+  let newsHtml = '';
+  if (news && news.items.length) {
+    const [p, n, u] = news.senti;
+    const mood = p > n ? `🟢 긍정 우세 (긍정 ${p} · 부정 ${n} · 중립 ${u})`
+      : n > p ? `🔻 부정 우세 (긍정 ${p} · 부정 ${n} · 중립 ${u})`
+      : `⚪ 중립 (긍정 ${p} · 부정 ${n} · 중립 ${u})`;
+    newsHtml = `<div style="margin-top:14px">
+      <b style="font-size:.94rem">📰 최근 뉴스</b>
+      <span style="font-size:.8rem;color:var(--sub);margin-left:8px">${mood} · 제목 키워드 기반 참고용</span>
+      <div class="news-list">${news.items.map(([t, s, d, l]) =>
+        `<a class="news-item" href="${l}" target="_blank" rel="noopener">· ${t}<span class="meta">${s} ${d}</span></a>`).join('')}
+      </div></div>`;
+  }
+
   const d = $('#screen-detail');
   d.style.display = 'block';
   d.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px">
       <div><span style="font-size:1.15rem;font-weight:700">${r.name}</span>
         <span class="mono" style="color:var(--sub)"> ${r.code}</span>
-        <span class="chip ${GRADE_CLS(r.grade)}" style="margin-left:8px">${r.grade}</span></div>
+        <span style="margin-left:8px">${statusChip(r.status)}</span></div>
       <div style="display:flex;gap:10px;align-items:center">
-        <span style="font-size:.9rem;color:var(--sub)">종합점수 <b style="color:var(--ink)">${r.totalScore}점</b></span>
+        <span style="font-size:.9rem;color:var(--sub)">종합점수 <b style="color:var(--ink)">${r.score}점</b></span>
         <button class="btn sm" id="detail-watch">${isWatched(r.code) ? '★ 담김 (해제)' : '☆ 관심 종목 담기'}</button>
       </div>
     </div>
-    <div class="desc" style="margin:6px 0 10px">💬 ${r.summary}</div>
+    <div class="desc" style="margin:6px 0 10px">💬 ${r.reason}</div>
     ${fundHtml}
     <div class="badges">
-      ${bdg(r.goldenCross, '골든크로스 ' + (r.gcDate || ''))}
-      ${bdg(r.volSurge, `거래량급증 ${(r.volRatio ?? 0).toFixed(1)}x`)}
-      ${bdg(r.rsiSignal, `RSI ${(r.rsi ?? 0).toFixed(0)}`)}
-      ${bdg(r.near52, `52주고점 ${(r.high52Ratio ?? 0).toFixed(0)}%`)}
+      ${bdg(r.trend, '상승 흐름 (20일선 > 60일선)')}
+      ${bdg(r.gcRecent, '골든크로스 ' + (r.gcRecent ? r.gcDate : ''))}
+      ${bdg(35 <= r.rsi && r.rsi <= 55, `RSI ${(r.rsi ?? 0).toFixed(0)}`)}
+      ${bdg(r.volRatio >= 1.5 && r.upDay, `거래량 ${(r.volRatio ?? 0).toFixed(1)}x${r.upDay ? ' (상승일)' : ' (하락일)'}`)}
+      ${bdg(r.high52Ratio >= 92, `52주고점 ${(r.high52Ratio ?? 0).toFixed(0)}%`)}
     </div>
-    <div id="detail-chart" style="height:400px"></div>`;
+    ${newsHtml}
+    <div id="detail-chart" style="height:400px;margin-top:10px"><div class="empty">📉 차트 불러오는 중…</div></div>`;
   $('#detail-watch').onclick = () => { toggleWatch(r.code, r.name); showDetail(code); };
   drawStockChart(code, 'detail-chart');
   d.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-function drawStockChart(code, el) {
-  const c = DATA.screening.charts[code];
+async function drawStockChart(code, el) {
+  let c;
+  try { c = (await ensureCharts())[code]; }
+  catch (e) { $('#' + el).innerHTML = '<div class="empty">차트 데이터를 불러오지 못했습니다.</div>'; return; }
   if (!c) { $('#' + el).innerHTML = '<div class="empty">차트 데이터가 없습니다.</div>'; return; }
   const traces = [
     { x: c.dates, y: c.close, name: '종가', line: { color: themeC('--ink'), width: 1.4 } },
@@ -979,14 +1109,13 @@ function drawStockChart(code, el) {
     margin: { t: 10, l: 50, r: 10, b: 20 },
     legend: { orientation: 'h', y: 1.12 },
     dragmode: 'pan', hovermode: 'x unified',
-    // type:'category' — 거래일만 이어 붙여 주말 공백·연도 오해석 없이 끊김 없는 차트
     xaxis: axis({ type: 'category', nticks: 8, showgrid: false,
              rangeslider: { visible: true, thickness: 0.09 } }),
     yaxis: axis({ tickformat: ',', fixedrange: false }),
   }), { displayModeBar: true, displaylogo: false, scrollZoom: true, responsive: true,
        modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d'] });
   const host = document.getElementById(el);
-  host.querySelectorAll('.chart-hint').forEach(x => x.remove());   // 재렌더 시 중복 방지
+  host.querySelectorAll('.chart-hint').forEach(x => x.remove());
   const hint = document.createElement('div');
   hint.className = 'chart-hint';
   hint.style.cssText = 'font-size:.78rem;color:var(--sub);text-align:center;margin-top:4px';
