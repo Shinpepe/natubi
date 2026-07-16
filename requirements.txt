@@ -1,0 +1,5 @@
+pandas
+finance-datareader
+opendartreader
+lxml
+requests
