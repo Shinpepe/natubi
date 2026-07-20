@@ -81,6 +81,10 @@ main{padding:28px 0 60px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin-bottom:18px}
 .card h2{font-family:'Gowun Batang',serif;font-size:1.3rem;margin-bottom:4px}
 .card .desc{font-size:.86rem;color:var(--sub);margin-bottom:16px}
+.flow-sec{margin-top:20px;padding-top:16px;border-top:1px dashed var(--line)}
+.flow-sec:first-of-type{margin-top:0;padding-top:2px;border-top:none}
+.flow-lb{font-weight:700;font-size:.95rem;margin-bottom:8px}
+.flow-hint{color:var(--sub);font-weight:400;font-size:.84rem}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
@@ -147,7 +151,7 @@ th.num{text-align:right}
 /* 서브탭 */
 .subtabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .subtab{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:7px 15px;font-size:.87rem;color:var(--sub)}
-.subtab.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
+.subtab.on{background:var(--ink);border-color:var(--ink);color:var(--paper);font-weight:600}
 
 /* 배지 */
 .badges{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
@@ -157,7 +161,7 @@ th.num{text-align:right}
 /* 버튼 */
 .btn{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:9px 16px;font-size:.9rem;font-weight:600;color:var(--ink)}
 .btn:hover{border-color:var(--ink)}
-.btn.pri{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn.pri{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 .btn.pri:hover{opacity:.88}
 .btn.danger{color:var(--warn);border-color:#EBCFCF}
 .btn.sm{padding:5px 11px;font-size:.82rem;border-radius:7px}
@@ -272,13 +276,14 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
       <div class="grid4" id="home-metrics"></div>
       <div class="card" id="global-card" style="display:none;margin-top:18px">
         <h2>글로벌 시장 지표</h2>
-        <div class="desc">해외 지수·원자재는 데이터 수집 시점(한국 장 마감 후)에 끝난 직전 거래 세션의 종가 기준이에요. 미국 증시는 한국시간 밤에 열리므로, 오늘 밤 미국장 결과는 내일 갱신 때 반영됩니다.</div>
+        <div class="desc">해외 지수·원자재는 데이터 수집 시점(한국 장 마감 후)에 끝난 직전 거래 세션의 종가 기준이에요. 미국 증시는 한국시간 밤에 열리므로, 오늘 밤 결과는 내일 갱신 때 반영됩니다.</div>
         <div class="grid4" id="global-metrics"></div>
         <details class="help" style="margin-top:14px;margin-bottom:0">
           <summary>❓ 이 지표들을 왜 볼까요?</summary>
           <div class="body">
             <p><b>KOSDAQ</b> : 중소·성장 기업 중심 시장의 흐름을 보세요.</p>
             <p><b>S&P 500 · 나스닥 · 다우</b> : 미국 투자 시장의 전체적인 흐름을 보세요.</p>
+	    <p><b>미국 금리</b> : 금리가 오르면 주식 시장과 환율에 부담이 커질 수 있습니다.</p>
             <p><b>달러/원</b> : 환율이 오르면 한국 투자 시장에 부담이 될 수 있습니다.</p>
             <p><b>금</b> : 금이 오르면 주식 시장이 불안하다는 신호일 수 있습니다.</p>
             <p><b>WTI 유가</b> : 국제 기름값이 오르면 기업과 물가에 부담이 커집니다.</p>
@@ -352,20 +357,19 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
         </div>
       </div>
       <div class="card">
-        <h2>시장 온도 추이</h2>
-        <div class="desc">공포-탐욕 지수가 매 거래일 하나씩 쌓입니다. 시장 심리의 흐름을 읽어보세요.</div>
-        <div id="history-chart" style="height:260px"></div>
-      </div>
-      <div class="grid2">
-        <div class="card">
-          <h2>달러/원 환율 추이</h2>
-          <div class="desc">환율이 오르면(원화 가치 하락) 외국인 투자자가 한국 주식을 팔고 떠나기 쉬워져, 우리 시장에 부담이 될 수 있어요.</div>
-          <div id="fx-chart" style="height:230px"></div>
+        <h2>시장 흐름 추이</h2>
+        <div class="desc">매 거래일 쌓이는 세 가지 흐름을 같은 기간으로 나란히 봅니다 — 시장 심리, 환율, 그리고 한·미 시장의 상대적 힘.</div>
+        <div class="flow-sec">
+          <div class="flow-lb">시장 온도 <span class="flow-hint">— 공포-탐욕 지수의 추이 기록</span></div>
+          <div id="history-chart" style="height:220px"></div>
         </div>
-        <div class="card">
-          <h2>코스피 vs 나스닥</h2>
-          <div class="desc">기록 시작일을 둘 다 100점으로 맞춰놓고, 이후 어느 시장의 힘이 더 좋은지 비교해요.</div>
-          <div id="compare-chart" style="height:230px"></div>
+        <div class="flow-sec">
+          <div class="flow-lb">달러/원 환율 <span class="flow-hint">— 오르면(원화 약세) 외국인 유입에 부담이 될 수 있어요</span></div>
+          <div id="fx-chart" style="height:200px"></div>
+        </div>
+        <div class="flow-sec">
+          <div class="flow-lb">코스피 vs 나스닥 <span class="flow-hint">— 기록 시작일을 100으로 맞춘 상대 강도 비교</span></div>
+          <div id="compare-chart" style="height:200px"></div>
         </div>
       </div>
       <div class="card">
@@ -1781,7 +1785,7 @@ function msDraw() {
       if (ms.board[r][c] === -1) { btn.classList.add('boom'); btn.textContent = '💣'; }
       else {
         btn.textContent = NUM[ms.board[r][c]];
-        btn.style.color = COLOR[ms.board[r][c]] || '#1B2537';
+        btn.style.color = COLOR[ms.board[r][c]] || 'var(--ink)';
       }
       btn.disabled = true;
     } else if (ms.flag[r][c]) {
