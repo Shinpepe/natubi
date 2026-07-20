@@ -13,7 +13,7 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 30   # 외부 API 무한 대기로 러너 잔여시간 소진 방지
+    timeout-minutes: 60   # 폭주 방지 상한 — 정상 실행이 최대 ~30분까지 관측된 바 있어 2배 여유
     steps:
       - name: 체크아웃
         uses: actions/checkout@v5
