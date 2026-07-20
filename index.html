@@ -47,7 +47,7 @@ body{
 .serif{font-family:'Gowun Batang',serif}
 .mono{font-family:'IBM Plex Mono',monospace;font-size:.86em;letter-spacing:-.02em}
 .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
-button{font-family:inherit;cursor:pointer}
+button{font-family:inherit;cursor:pointer;color:inherit}
 input,select{font-family:inherit;font-size:.95rem;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);width:100%}
 input:focus,select:focus,button:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
 
@@ -205,6 +205,7 @@ th.num{text-align:right}
 .ms-cell:hover:not(:disabled){filter:brightness(1.05)}
 .ms-cell.open{background:var(--ms-open);box-shadow:none;border:1px solid var(--line);cursor:default}
 .ms-cell.boom{background:var(--warn-bg)}
+[data-theme="dark"] .ms-cell.boom{background:var(--warn)}  /* 💣 이모지(검은 구체)가 어두운 배경에 묻히지 않게 밝은 적색으로 */
 .ms-bar{display:flex;justify-content:space-between;align-items:center;max-width:400px;margin:0 auto 14px}
 .toggle{display:inline-flex;align-items:center;gap:8px;font-size:.9rem;cursor:pointer;user-select:none}
 .toggle input{width:auto}
