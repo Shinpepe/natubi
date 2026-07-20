@@ -36,9 +36,11 @@ def now_str():
     return datetime.now(KST).strftime("%Y-%m-%d %H:%M")
 
 
-def append_history(score, kospi, indicators=None):
-    """공포-탐욕 점수와 글로벌 지표를 날짜별로 누적 (같은 날짜는 갱신, 최근 180개 유지)
-    행 형식: [날짜, 점수, KOSPI종가, {지표명: 값}]"""
+def append_history(score, kospi, indicators=None, components=None):
+    """공포-탐욕 점수와 글로벌 지표를 날짜별로 누적 (같은 날짜는 갱신, 최근 400개 유지)
+    행 형식: [날짜, 점수, KOSPI종가, {지표명: 값}, {컴포넌트 원시값}]
+    컴포넌트 원시값(strength·breadth)은 z-score 정규화 이력으로 쓰이므로
+    1년치(FG_WIN=252)가 쌓일 수 있도록 보존 개수를 400으로 늘림."""
     path = os.path.join(DATA_DIR, "history.json")
     rows = []
     if os.path.exists(path):
@@ -50,8 +52,14 @@ def append_history(score, kospi, indicators=None):
     today = datetime.now(KST).strftime("%Y-%m-%d")
     rows = [r for r in rows if r[0] != today]
     ind_map = {name: val for name, val, _chg, _u in (indicators or [])}
-    rows.append([today, score, kospi["close"] if kospi else None, ind_map])
-    rows = rows[-180:]
+    raw = {}
+    if components:
+        if "_raw_strength" in components:
+            raw["strength"] = components["_raw_strength"]
+        if "_raw_breadth" in components:
+            raw["breadth"] = components["_raw_breadth"]
+    rows.append([today, score, kospi["close"] if kospi else None, ind_map, raw])
+    rows = rows[-400:]
     write_json("history.json", {"rows": rows})
 
 
@@ -104,38 +112,144 @@ def collect_indicators(fdr):
     return out
 
 
-def calc_market_score(fdr):
-    """KOSPI 이격도 기반 공포-탐욕 점수 (기존 로직 이식)"""
+FG_CLIP = 2.0   # z-score 절단 폭 (±2σ → 0점/100점)
+FG_WIN = 252    # 정규화 기준 창 (약 1년 거래일)
+
+
+def _fg_z2s(series, win=FG_WIN, clip=FG_CLIP, name=""):
+    """지표를 '평소 변동폭 대비 이탈 정도'로 0~100 환산.
+    CNN Fear & Greed 핵심 원리: 절대 임계값 대신 자기 이력 대비 상대 위치(z-score).
+    데이터 부족·NaN이면 None 반환(컴포넌트 제외) — 가짜 중립값 주입 방지.
+    주의: 파이썬 min/max는 NaN을 조용히 통과시키므로(min(2.0, nan)==2.0)
+    반드시 사전에 NaN을 걸러야 한다. NaN이 새면 z가 +clip으로 둔갑해 100점이 된다."""
+    m, sd = series.rolling(win).mean(), series.rolling(win).std()
+    last, mu, s = series.iloc[-1], m.iloc[-1], sd.iloc[-1]
+    valid = all(v is not None and v == v for v in (last, mu, s)) and s > 0  # v==v → NaN 필터
+    if not valid:
+        if name:
+            print(f"  ⚠️ {name}: 데이터 부족 또는 이상치 — 이번 계산에서 제외")
+        return None
+    z = max(-clip, min(clip, (last - mu) / s))
+    return float((z + clip) / (2 * clip) * 100)
+
+
+def _fg_scalar_score(pd, value, hist_values, name=""):
+    """스칼라 지표(가격강도·시장폭)를 과거 이력 대비 0~100 환산.
+    이력이 60개 미만이면 None(컴포넌트 제외) — 초기 60거래일간 자동 축소 운영."""
+    if len(hist_values) < 60:
+        return None
+    s = pd.Series(list(hist_values) + [value], dtype=float)
+    return _fg_z2s(s, win=min(FG_WIN, len(s) - 1), name=name)
+
+
+def load_past_components():
+    """history.json에서 가격강도·시장폭 원시값 이력을 로드 (없으면 빈 리스트).
+    오늘 날짜 행은 제외 — 같은 날 재실행 시 1차 실행값이 자기 정규화 기준에
+    섞여 들어가는 자기참조를 방지한다."""
+    path = os.path.join(DATA_DIR, "history.json")
+    out = {"strength": [], "breadth": []}
+    if not os.path.exists(path):
+        return out
+    today = datetime.now(KST).strftime("%Y-%m-%d")
     try:
-        df = fdr.DataReader("^KS11", (datetime.now(KST) - timedelta(days=200)).strftime("%Y-%m-%d"))
-        if df is None or len(df) < 60:
-            return 50, None
-        ma20 = df["Close"].rolling(20).mean()
-        disparity = (df["Close"].iloc[-1] / ma20.iloc[-1]) * 100
-        price_score = (disparity - 95) * 10
+        with open(path, "r", encoding="utf-8") as f:
+            rows = json.load(f).get("rows", [])
+        for r in rows:
+            if r[0] == today:
+                continue
+            raw = r[4] if len(r) > 4 and isinstance(r[4], dict) else {}
+            if isinstance(raw.get("strength"), (int, float)):
+                out["strength"].append(raw["strength"])
+            if isinstance(raw.get("breadth"), (int, float)):
+                out["breadth"].append(raw["breadth"])
+    except Exception:
+        pass
+    return out
 
-        vol_ma5 = df["Volume"].rolling(5).mean()
-        vol_ratio = df["Volume"].iloc[-1] / vol_ma5.iloc[-1] if vol_ma5.iloc[-1] > 0 else 1.0
-        vol_score = max(-10, min(10, (vol_ratio - 1.0) * 20))
 
-        # 볼린저 밴드 위치 점수: 20일 평균 대비 표준편차(z-score) 기준 -2σ~+2σ → 0~100
-        std20 = df["Close"].rolling(20).std()
-        z = (df["Close"].iloc[-1] - ma20.iloc[-1]) / std20.iloc[-1] if std20.iloc[-1] > 0 else 0
-        band_score = (z + 2) * 25
+def calc_market_score(fdr, pd, merged=None, histories=None, past=None):
+    """공포-탐욕 지수 (CNN 방법론 이식: 컴포넌트별 z-score → 동일가중 평균)
+    merged    : KRX 전종목 스냅샷 (ChagesRatio, Amount) — 시장폭 계산용
+    histories : {ticker: 일봉 DataFrame} — 52주 신고/신저가 계산용 (기존 수집분 재사용)
+    past      : load_past_components() 결과 — 스칼라 지표 정규화용 이력
+    반환      : (score, kospi, components)"""
+    past = past or {}
+    comp = {}
+    try:
+        start = (datetime.now(KST) - timedelta(days=760)).strftime("%Y-%m-%d")
+        k = fdr.DataReader("^KS11", start)
+        if k is None or len(k) < 150:
+            return 50, None, {}
 
-        # 합산: 이격도(0~100)×0.4 + 밴드위치(0~100)×0.4 + 거래량(±10)×2 = ±20점 + 추세필터 ±5점
-        total = price_score * 0.4 + band_score * 0.4 + vol_score * 2.0
-        ma60 = df["Close"].rolling(60).mean().iloc[-1]
-        total += 5 if ma20.iloc[-1] > ma60 else -5
+        # ── 1. 모멘텀: 125일 이동평균 대비 이격 ──
+        mom = k["Close"] / k["Close"].rolling(125).mean() - 1
+        sc = _fg_z2s(mom, name="모멘텀")
+        if sc is not None:
+            comp["모멘텀"] = sc
+
+        # ── 2. 변동성: 20일 실현변동성 (낮을수록 탐욕 → 역방향) ──
+        rv = k["Close"].pct_change().rolling(20).std()
+        sc = _fg_z2s(rv, name="변동성")
+        if sc is not None:
+            comp["변동성"] = 100 - sc
+
+        # ── 3. 안전자산 수요: 주식 20일 수익률 − 금 20일 수익률 ──
+        try:
+            g = fdr.DataReader("GC=F", start)["Close"].reindex(k.index).ffill()
+            spread = (k["Close"] / k["Close"].shift(20) - 1) - (g / g.shift(20) - 1)
+            sc = _fg_z2s(spread, name="안전자산")
+            if sc is not None:
+                comp["안전자산"] = sc
+        except Exception as e:
+            print(f"  ⚠️ 안전자산 지표 건너뜀: {e}")
+
+        # ── 4. 가격 강도: 52주 신고가 vs 신저가 종목수 ──
+        if histories:
+            hi = lo = 0
+            for df_h in histories.values():
+                if df_h is None or len(df_h) < 200:
+                    continue
+                c = df_h["Close"]
+                w = c.tail(252)
+                if c.iloc[-1] >= w.max() * 0.99:
+                    hi += 1
+                elif c.iloc[-1] <= w.min() * 1.01:
+                    lo += 1
+            if hi + lo > 0:
+                raw = (hi - lo) / (hi + lo)  # -1(전부 신저가) ~ +1(전부 신고가)
+                comp["_raw_strength"] = round(raw, 4)
+                sc = _fg_scalar_score(pd, raw, past.get("strength", []), name="가격강도")
+                if sc is not None:
+                    comp["가격강도"] = sc
+
+        # ── 5. 시장 폭: 상승종목 거래대금 비중 ──
+        if merged is not None and "Amount" in merged:
+            up_amt = float(merged.loc[merged["ChagesRatio"] > 0, "Amount"].sum())
+            dn_amt = float(merged.loc[merged["ChagesRatio"] < 0, "Amount"].sum())
+            if up_amt + dn_amt > 0:
+                raw = up_amt / (up_amt + dn_amt)  # 0~1
+                comp["_raw_breadth"] = round(raw, 4)
+                sc = _fg_scalar_score(pd, raw, past.get("breadth", []), name="시장폭")
+                if sc is not None:
+                    comp["시장폭"] = sc
+
+        # ── 합산: 동일가중 평균 (CNN 방식) ──
+        parts = {kk: v for kk, v in comp.items() if not kk.startswith("_")}
+        if not parts:
+            return 50, None, comp
+        score = int(round(max(0, min(100, sum(parts.values()) / len(parts)))))
+        for kk, v in parts.items():
+            print(f"  · {kk}: {v:.0f}")
 
         kospi = {
-            "close": round(float(df["Close"].iloc[-1]), 2),
-            "change": round(float(df["Close"].iloc[-1] / df["Close"].iloc[-2] - 1) * 100, 2),
+            "close": round(float(k["Close"].iloc[-1]), 2),
+            "change": round(float(k["Close"].iloc[-1] / k["Close"].iloc[-2] - 1) * 100, 2),
+            "date": k.index[-1].strftime("%Y-%m-%d"),  # 휴장일 판별용 (프론트 미사용)
         }
-        return int(max(0, min(100, total))), kospi
+        return score, kospi, comp
     except Exception as e:
         print(f"  ⚠️ 시장 점수 계산 실패: {e}")
-        return 50, None
+        return 50, None, {}
 
 
 def check_fundamental(dart, pd, ticker, mcap, target_year, report_code):
@@ -169,9 +283,18 @@ def check_fundamental(dart, pd, ticker, mcap, target_year, report_code):
         disp_prev, rate_prev = growth(val_prev, val_pprev)
         multiple = round(mcap / val_curr, 1)
 
-        is_accel = rate_curr > rate_prev and rate_prev != 999.0
-        is_streak = rate_curr > 0 and rate_prev > 0 and rate_prev != 999.0
-        trait = ("🚀성장가속 " if is_accel else "") + ("📈연속성장" if is_streak else "✅반등/전환")
+        # 흑자전환(직전 결산 적자→흑자, rate_curr=999 센티널)은 별도 라벨로 분리.
+        # 배점 조건(score_accel)은 종전 로직과 비트 단위로 동일하게 유지 —
+        # 라벨만 바꾸고 점수를 바꾸면 추천 결과가 달라지므로 의도적으로 분리하지 않음.
+        # (2년 연속 적자 후 전환은 종전대로 +10, 전년 흑자→적자→금년 전환은 종전대로 +35)
+        is_turn = rate_curr == 999.0
+        score_accel = rate_curr > rate_prev and rate_prev != 999.0   # 종전 is_accel 그대로
+        is_accel = score_accel and not is_turn                        # 라벨 표시용
+        is_streak = (not is_turn) and rate_curr > 0 and rate_prev > 0 and rate_prev != 999.0
+        if is_turn:
+            trait = "🔄흑자전환"
+        else:
+            trait = ("🚀성장가속 " if is_accel else "") + ("📈연속성장" if is_streak else "✅반등/전환")
 
         score = 0
         if multiple <= 10:
@@ -180,7 +303,7 @@ def check_fundamental(dart, pd, ticker, mcap, target_year, report_code):
             score += 25
         elif multiple <= 20:
             score += 10
-        if is_accel:
+        if score_accel:
             score += 35
         elif is_streak:
             score += 20
@@ -222,9 +345,13 @@ def fetch_history(fdr, ticker):
 
 
 def calc_signal(pd, df):
-    """포트폴리오 추세 신호 재료 (기존 check_my_stocks 이식)
-    반환: [현재가, ATR, 단기 데드크로스(5-20) 여부, 중기 데드크로스(20-60) 여부]
-    손절가/목표가는 사용자의 매수가가 필요하므로 클라이언트에서 조합 계산."""
+    """포트폴리오 추세 신호 재료 (기존 check_my_stocks 이식 + 손절 로직 보강)
+    반환: [현재가, ATR, 단기 데드크로스(5-20), 중기 데드크로스(20-60), 20일 최고 종가]
+    손절가는 클라이언트에서 샹들리에 스톱 방식으로 계산:
+        stop = max(20일 최고 종가 − 2×ATR, 매수가×0.95)
+    ※ '현재가 − 2×ATR'를 손절 기준으로 쓰면 주가와 함께 손절선이 내려가
+       (cur ≤ cur − 2×ATR 은 항상 거짓) 알림이 절대 발동하지 않는다.
+       고점 기준으로 계산해야 손절선이 위로만 올라가는 트레일링 스톱이 된다."""
     try:
         close = df["Close"]
         ma5 = close.rolling(5).mean()
@@ -236,13 +363,16 @@ def calc_signal(pd, df):
         high_close = (df["High"] - close.shift()).abs()
         low_close = (df["Low"] - close.shift()).abs()
         tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
-        atr = float(tr.rolling(window=14).mean().iloc[-1])
+        # Wilder 평활 ATR (업계 표준, RSI와 동일 계열) — 단순이동평균 대비 급등락에 덜 과민
+        atr = float(tr.ewm(alpha=1 / 14, adjust=False).mean().iloc[-1])
 
         dead_5_20 = (ma5 < ma20) & (ma5.shift(1) >= ma20.shift(1))
         dead_20_60 = (ma20 < ma60) & (ma20.shift(1) >= ma60.shift(1))
+        hi20 = float(close.tail(20).max())  # 샹들리에 스톱 기준 고점
 
         return [round(curr), round(atr, 1),
-                int(bool(dead_5_20.tail(5).any())), int(bool(dead_20_60.tail(5).any()))]
+                int(bool(dead_5_20.tail(5).any())), int(bool(dead_20_60.tail(5).any())),
+                round(hi20)]
     except Exception:
         return None
 
@@ -397,9 +527,10 @@ def build_real():
     df_price = fdr.StockListing("KRX")
     df_desc = fdr.StockListing("KRX-DESC")
     merged = pd.merge(
-        df_price[["Code", "Name", "Close", "ChagesRatio", "Marcap", "Volume"]],
+        df_price[["Code", "Name", "Close", "ChagesRatio", "Marcap", "Volume", "Amount"]],
         df_desc[["Code", "Sector"]], on="Code", how="left",
     )
+    merged["Amount"] = pd.to_numeric(merged["Amount"], errors="coerce").fillna(0)
     merged["Close"] = pd.to_numeric(merged["Close"], errors="coerce").fillna(0)
     merged["ChagesRatio"] = pd.to_numeric(merged["ChagesRatio"], errors="coerce").fillna(0)
     merged["Marcap"] = pd.to_numeric(merged["Marcap"], errors="coerce").fillna(0)
@@ -420,20 +551,11 @@ def build_real():
     ]
     write_json("sectors.json", {"updated": updated, "rows": sectors})
 
-    # ── 2. 시장 점수 ──
-    print("📊 공포-탐욕 지수 계산...")
-    score, kospi = calc_market_score(fdr)
+    # ── 2. 글로벌 지표 ──
+    # 공포-탐욕 지수는 52주 신고/신저가 계산에 종목 히스토리가 필요하므로
+    # 스크리닝 루프(3번)에서 히스토리를 모은 뒤에 계산한다.
     print("🌍 글로벌 지표 수집...")
     indicators = collect_indicators(fdr)
-    up = int((merged["ChagesRatio"] > 0).sum())
-    down = int((merged["ChagesRatio"] < 0).sum())
-    flat = int((merged["ChagesRatio"] == 0).sum())
-    write_json("market.json", {
-        "updated": updated, "score": score, "kospi": kospi,
-        "breadth": {"up": up, "down": down, "flat": flat},
-        "indicators": indicators,
-    })
-    append_history(score, kospi, indicators)
 
     # ── 3. 종목 스크리닝 + 포트폴리오 신호 ──
     signal_n = max(int(os.environ.get("SIGNAL_N", "300")), top_n)
@@ -443,6 +565,7 @@ def build_real():
     candidates = merged.nlargest(signal_n, "Marcap")
 
     results, charts, signals = [], {}, {}
+    histories = {}  # 공포-탐욕 '가격강도' 계산용 (추가 API 호출 없이 재사용)
     for i, row in enumerate(candidates.itertuples(), 1):
         ticker, name, mcap = row.Code, row.Name, row.Marcap
         if i % 25 == 0:
@@ -451,6 +574,7 @@ def build_real():
         df_hist = fetch_history(fdr, ticker)
         if df_hist is None:
             continue
+        histories[ticker] = df_hist
 
         # 포트폴리오 신호 (상위 signal_n 전체)
         sig = calc_signal(pd, df_hist)
@@ -488,6 +612,30 @@ def build_real():
     rec_list = eligible[:rec_max]
     print(f"⭐ 오늘의 추천 {len(rec_list)}종목 (눌림목 {sum(1 for e in rec_list if e['status']=='pull')} · "
           f"돌파 {sum(1 for e in rec_list if e['status']=='brk')})")
+
+    # ── 4. 시장 점수 (히스토리 확보 후 계산) ──
+    print("📊 공포-탐욕 지수 계산...")
+    past = load_past_components()
+    score, kospi, components = calc_market_score(fdr, pd, merged, histories, past)
+    up = int((merged["ChagesRatio"] > 0).sum())
+    down = int((merged["ChagesRatio"] < 0).sum())
+    flat = int((merged["ChagesRatio"] == 0).sum())
+    comp_display = {kk: round(v) for kk, v in components.items() if not kk.startswith("_")}
+    write_json("market.json", {
+        "updated": updated, "score": score, "kospi": kospi,
+        "breadth": {"up": up, "down": down, "flat": flat},
+        "indicators": indicators,
+        "components": comp_display,
+    })
+    # 휴장일 가드: KOSPI 최종 데이터 날짜가 오늘이 아니면(공휴일 실행·수동 주말 실행)
+    # 전일 값이 중복 누적되어 z-score 정규화 이력을 오염시키므로 history 누적만 생략.
+    # market.json 등 화면 데이터 갱신은 그대로 수행(멱등).
+    today_kst = datetime.now(KST).strftime("%Y-%m-%d")
+    if kospi and kospi.get("date") == today_kst:
+        append_history(score, kospi, indicators, components)
+    else:
+        print(f"  ℹ️ KOSPI 최종 거래일({kospi.get('date') if kospi else '?'}) ≠ 오늘({today_kst}) "
+              f"— 휴장일로 판단해 history 누적 생략")
 
     # ── 뉴스: 추천 종목만 수집 ──
     news = collect_news(rec_list) if rec_list else {}
@@ -536,7 +684,8 @@ def build_sample():
         if i < 150:
             sec_rows.append([name, sector, marcap_e, chg])
         atr = round(price * rng.uniform(0.015, 0.05), 1)
-        signals[code] = [price, atr, 1 if rng.random() < 0.12 else 0, 1 if rng.random() < 0.06 else 0]
+        signals[code] = [price, atr, 1 if rng.random() < 0.12 else 0, 1 if rng.random() < 0.06 else 0,
+                         round(price * rng.uniform(1.0, 1.12))]  # 20일 최고 종가(현재가 이상)
 
         if i < 60:  # 스크리닝 분석 샘플
             trend = rng.random() < 0.62
@@ -569,7 +718,7 @@ def build_sample():
                     "marcap": marcap_e, "multiple": multiple,
                     "growthCurr": f"{round(rng.uniform(5, 80), 1)}%",
                     "growthPrev": f"{round(rng.uniform(-10, 50), 1)}%",
-                    "trait": rng.choice(["🚀성장가속 📈연속성장", "📈연속성장", "✅반등/전환"]),
+                    "trait": rng.choice(["🚀성장가속 📈연속성장", "📈연속성장", "✅반등/전환", "🔄흑자전환"]),
                     "opProfit": int(marcap_e / multiple), "profitDelta": rng.randint(50, 3000),
                     "fundScore": f_score,
                 })
@@ -605,8 +754,9 @@ def build_sample():
 
     write_json("prices.json", {"updated": updated, "rows": prices})
     write_json("sectors.json", {"updated": updated, "rows": sec_rows})
+    sample_score = rng.randint(20, 80)
     write_json("market.json", {
-        "updated": updated, "score": rng.randint(20, 80),
+        "updated": updated, "score": sample_score,
         "kospi": {"close": 3124.56, "change": 0.84},
         "breadth": {"up": 98, "down": 71, "flat": 11},
         "indicators": [
@@ -615,6 +765,10 @@ def build_sample():
             ["달러/원", 1342.50, 0.45, "원"], ["금(온스)", 3310.80, 0.62, "$"],
             ["WTI 유가", 71.34, -1.05, "$"],
         ],
+        "components": {
+            kk: max(0, min(100, sample_score + rng.randint(-18, 18)))
+            for kk in ["모멘텀", "변동성", "안전자산", "가격강도", "시장폭"]
+        },
     })
     write_json("screening.json", {
         "updated": updated, "targetYear": 2025, "hasFundamentals": True,
@@ -633,7 +787,9 @@ def build_sample():
         for k in g:
             g[k] = round(g[k] * (1 + rng.gauss(0.0005, 0.011)), 2)
         hist.append([day.strftime("%Y-%m-%d"), sc,
-                     round(3000 + sc * 5 + rng.uniform(-30, 30), 2), dict(g)])
+                     round(3000 + sc * 5 + rng.uniform(-30, 30), 2), dict(g),
+                     {"strength": round(rng.uniform(-0.8, 0.8), 4),
+                      "breadth": round(rng.uniform(0.25, 0.75), 4)}])
     write_json("history.json", {"rows": hist})
     print("✅ 샘플 생성 완료 — 로컬에서 'python -m http.server' 후 확인하세요")
 

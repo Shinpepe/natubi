@@ -272,7 +272,7 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
       <div class="grid4" id="home-metrics"></div>
       <div class="card" id="global-card" style="display:none;margin-top:18px">
         <h2>글로벌 시장 지표</h2>
-        <div class="desc">해외 시장 지수와 원자재 지표는 전일 종가 기준입니다.</div>
+        <div class="desc">해외 지수·원자재는 데이터 수집 시점(한국 장 마감 후)에 끝난 직전 거래 세션의 종가 기준이에요. 미국 증시는 한국시간 밤에 열리므로, 오늘 밤 미국장 결과는 내일 갱신 때 반영됩니다.</div>
         <div class="grid4" id="global-metrics"></div>
         <details class="help" style="margin-top:14px;margin-bottom:0">
           <summary>❓ 이 지표들을 왜 볼까요?</summary>
@@ -308,7 +308,7 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
           <p><b>중기 데드크로스(🚨)</b>: 20일선이 60일선 하향 돌파 — 추세 반전이므로 매도를 검토하세요.</p>
           <p><b>추천 손절가</b>: 변동폭(ATR) 기반으로 계산되며, 현재가가 이탈하면 즉시 매도 신호가 표시됩니다.</p></div></details>
         <details class="help"><summary>💰 모의 투자 — 리스크 없는 실전 연습</summary>
-          <div class="body"><p>가상 자본 1,000만 원으로 매매 전략을 테스트하세요. 원화 금액으로 주문하면 수량이 자동 계산되고, 평단가와 실현손익이 자동 관리됩니다. 체결가는 당일 종가 기준입니다.</p></div></details>
+          <div class="body"><p>가상 자본 1,000만 원으로 매매 전략을 테스트하세요. 실제 국내주식 소수점 거래 서비스처럼 <b>금액 단위(1,000원 이상)로 주문</b>하면 소수점 수량이 자동 계산되고, 평단가와 실현손익이 자동 관리됩니다. 체결가는 당일 종가 기준입니다.</p></div></details>
         <details class="help"><summary>🧮 투자 계산기 — 숫자에 근거한 투자</summary>
           <div class="body"><p><b>물타기 계산기</b>로 추가 매수 후 평단가를 미리 확인하고, <b>복리/배당 계산기</b>로 장기 목표를 시뮬레이션하세요.</p></div></details>
       </div>
@@ -333,10 +333,11 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
       <div class="grid2">
         <div class="card gauge-box">
           <h2 style="align-self:flex-start">시장 공포-탐욕 지수</h2>
-          <div class="desc" style="align-self:flex-start">KOSPI의 최근 흐름(평균선 대비 위치·거래량·출렁임)을 종합해 시장 분위기를 0~100점으로 나타낸 나투비 지표예요.</div>
+          <div class="desc" style="align-self:flex-start">모멘텀·변동성·안전자산 수요 등 여러 지표가 평소 대비 얼마나 벗어났는지를 각각 0~100점으로 매기고 평균 낸 지표예요. CNN 공포-탐욕 지수 방식을 한국 시장에 맞게 옮겼어요.</div>
           <svg id="gauge" viewBox="0 0 300 175" width="100%" style="max-width:340px" role="img" aria-label="공포 탐욕 게이지"></svg>
           <div class="gauge-score" id="gauge-score">–</div>
           <div class="gauge-label" id="gauge-label"></div>
+          <div id="gauge-comps" style="width:100%;max-width:340px;margin-top:14px"></div>
         </div>
         <div class="card">
           <h2>나투비의 조언</h2>
@@ -451,7 +452,7 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
         <details class="help">
           <summary>❓ 손절가·목표가·위험도가 뭔가요?</summary>
           <div class="body">
-            <p><b>추천 손절가</b>: 여기까지 내려오면 <b>더 큰 손해를 막기 위해 파는 것을 검토</b>할 가격이에요. 이 종목의 평소 출렁임 폭과 내 매수가(-5%)를 함께 고려해 매일 다시 계산됩니다.</p>
+            <p><b>추천 손절가</b>: 여기까지 내려오면 <b>더 큰 손해를 막기 위해 파는 것을 검토</b>할 가격이에요. 최근 20일 고점에서 이 종목의 평소 출렁임 폭(ATR×2)만큼 내려온 자리와 내 매수가(-5%) 중 높은 쪽으로, 매일 다시 계산됩니다. 주가가 오르면 손절선도 따라 올라가 이익을 지켜줘요.</p>
             <p><b>추천 목표가</b>: 평소 출렁임 폭 기준으로 <b>1차 수익 실현을 고려해볼 만한</b> 가격이에요. 무조건 팔라는 뜻이 아니라 "여기서 한 번 점검하라"는 눈금입니다.</p>
             <p><b>위험도</b>: 이 종목이 하루에 평균 몇 % 출렁이는지예요. 높을수록 급등도 급락도 큰 종목이니 비중을 작게 가져가는 게 안전해요.</p>
             <p><b>상태</b>: 🚨는 즉시 대응, 🚩/⚠️는 주의 깊게 지켜보기, ✅는 그대로 보유해도 좋다는 뜻이에요.</p>
@@ -771,6 +772,21 @@ function renderMarket() {
   $('#gauge-score').textContent = m.score;
   $('#gauge-label').textContent = adv.label;
   $('#gauge-label').style.color = adv.color;
+
+  // 컴포넌트별 하위 점수 막대 (CNN 스타일)
+  const comps = m.components || {};
+  const compNames = Object.keys(comps);
+  $('#gauge-comps').innerHTML = compNames.length ? compNames.map(name => {
+    const v = comps[name];
+    const c = adviceFor(v).color;
+    return `<div style="display:flex;align-items:center;gap:8px;margin:5px 0">
+      <span style="flex:0 0 62px;font-size:.78rem;color:var(--sub);text-align:right">${name}</span>
+      <div style="flex:1;height:8px;background:var(--line);border-radius:4px;overflow:hidden">
+        <div style="width:${v}%;height:100%;background:${c};border-radius:4px"></div>
+      </div>
+      <span style="flex:0 0 26px;font-size:.78rem;font-weight:600;color:${c}">${v}</span>
+    </div>`;
+  }).join('') : '';
   $('#market-date').textContent = '분석 기준: ' + m.updated;
   $('#market-advice').innerHTML = adv.html;
 
@@ -1268,7 +1284,7 @@ function renderPortfolio() {
     if (!portPicked) { alert('종목을 검색해서 선택해주세요.'); return; }
     if (!(price > 0)) { alert('매수가를 입력해주세요.'); return; }
     const list = store.get(PORT_KEY, []);
-    list.push({ code: portPicked.code, name: portPicked.name, buy: price });
+    list.push({ code: portPicked.code, name: portPicked.name, buy: price, hwm: price });
     store.set(PORT_KEY, list);
     portPicked = null; $('#port-search').value = ''; $('#port-price').value = '';
     drawPortTable();
@@ -1278,8 +1294,12 @@ function renderPortfolio() {
 }
 
 function stockStatus(s) {
-  // 원본 check_my_stocks 상태 판정 이식:
-  // 손절가 = max(현재가 - 2×ATR, 매수가×0.95) · 목표가 = 현재가 + 2×ATR
+  // 손절가 = max(포지션 고점(HWM) − 2×ATR, 매수가×0.95) — 샹들리에 스톱(Chandelier Exit)
+  // HWM(high-water mark)은 '등록 이후 관측된 최고 종가'로, 등록 시점엔 매수가에서 출발해
+  // 위로만 갱신된다(drawPortTable에서 매 갱신 시 기록). 정통 샹들리에의 '진입 후 고점' 방식.
+  // ※ '최근 20일 고점' 대용치는 매수 전 고점까지 기준에 포함시켜, 하락한 종목을 새로 사면
+  //    등록 즉시 매도 신호가 뜨는 문제가 있어 HWM 방식으로 교체함.
+  // ※ '현재가 − 2×ATR' 방식은 손절선이 주가와 함께 내려가 알림 발동이 불가능했음.
   const info = DATA.priceMap[s.code];
   const sig = DATA.signals[s.code];
   const cur = info ? info.price : null;
@@ -1287,7 +1307,8 @@ function stockStatus(s) {
   if (!sig) return { cur, status: '📋 분석 대상 외', cls: 'none', level: 0,
                      note: `추세 신호는 시총 상위 ${DATA.signalTopN}종목까지 계산됩니다.` };
   const [, atr, d520, d2060] = sig;
-  const stop = Math.max(cur - atr * 2, s.buy * 0.95);
+  const ref = Math.max(s.hwm || 0, s.buy, cur);   // hwm 미기록(구버전 등록분)이어도 안전
+  const stop = Math.max(ref - atr * 2, s.buy * 0.95);
   const target = cur + atr * 2;
   const vol = atr / cur * 100;
   let status, cls, level;
@@ -1301,6 +1322,16 @@ function stockStatus(s) {
 
 function drawPortTable() {
   const list = store.get(PORT_KEY, []);
+  // 포지션별 고점(HWM) 갱신: 등록 이후 관측된 최고 종가를 기록 (위로만 이동)
+  // 방문일의 종가로만 샘플링되므로 방문하지 않은 사이의 고점은 놓칠 수 있음
+  // → 손절선이 정답보다 느슨해질 수는 있어도 잘못 빡빡해지지는 않는 방향의 오차
+  let hwmChanged = false;
+  list.forEach(s => {
+    const info = DATA.priceMap[s.code];
+    const next = Math.max(s.hwm || 0, s.buy, info ? info.price : 0);
+    if (next !== s.hwm) { s.hwm = next; hwmChanged = true; }
+  });
+  if (hwmChanged) store.set(PORT_KEY, list);
   const tbl = $('#port-tbl'), empty = $('#port-empty'), alerts = $('#port-alerts');
   if (!list.length) { tbl.innerHTML = ''; alerts.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
@@ -1398,7 +1429,8 @@ function holdingsOf(st) {
     if (t.side === 'BUY') { h.qty += t.qty; h.cost += t.price * t.qty; }
     else if (h.qty > 0) {
       const avg = h.cost / h.qty;
-      h.qty -= t.qty; h.cost = avg * h.qty;
+      const q = Math.min(t.qty, h.qty);   // 보유량 초과 매도 기록 방어 (데이터 오염 대비)
+      h.qty -= q; h.cost = avg * h.qty;
     }
   });
   return Object.values(map).filter(h => h.qty > 1e-6)
@@ -1418,7 +1450,9 @@ function renderTrading() {
     const amt = parseFloat($('#trade-amt').value) || 0;
     if (!tradePicked) { alert('종목을 검색해서 선택해주세요.'); return; }
     if (amt <= 0) { alert('매수 금액을 입력해주세요.'); return; }
+    if (amt < 1000) { alert('실제 소수점 거래처럼 1,000원 이상부터 주문할 수 있어요.'); return; }
     if (amt > st.cash) { alert('현금이 부족합니다. (보유: ' + won(st.cash) + ')'); return; }
+    // 실제 국내주식 소수점 거래와 동일: 금액 단위 주문 → 소수 6자리 수량, 종가 배치 체결
     const qty = amt / tradePicked.price;
     st.cash -= amt;
     st.trades.push({ date: new Date().toISOString().slice(0, 16).replace('T', ' '),
@@ -1498,7 +1532,11 @@ function drawTrading() {
       const amt = parseFloat(inp.value) || 0;
       if (amt <= 0) { alert('매도 금액을 입력해주세요.'); return; }
       const st2 = tradeState();
-      const qty = amt >= h.val * 0.99 ? h.qty : amt / h.cur;   // 99% 이상이면 전량 매도
+      const isFull = amt >= h.val * 0.99;   // 99% 이상 입력 시 전량 매도
+      // 실제 소수점 거래 규칙: 1,000원 미만은 전량매도만 가능
+      if (!isFull && amt < 1000) { alert('1,000원 미만은 전량 매도만 가능해요.'); return; }
+      // 수량 상한 방어: 보유가치 초과 금액 입력 시 현금이 과대 지급되는 것 방지
+      const qty = isFull ? h.qty : Math.min(amt / h.cur, h.qty);
       const total = h.cur * qty;
       st2.cash += total;
       st2.trades.push({ date: new Date().toISOString().slice(0, 16).replace('T', ' '),
