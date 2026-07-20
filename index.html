@@ -23,9 +23,9 @@
   --paper:#F3F5F7; --card:#FFFFFF; --ink:#1B2537; --sub:#68727F; --line:#E1E5EA;
   --thead:#F7F9FB; --hover:#F7F9FB; --flat:#D8DDE3; --info-bg:#F0F4FD; --notice-bg:#FBF4F2;
   --ms-cell:#C7CDD6; --ms-hi:#E6EAEF; --ms-lo:#9AA3B0; --ms-open:#EDF0F3;
-  --up:#D94F4F; --down:#3B66D4; --stamp:#C0392B;
-  --buy:#1F8A5A; --buy-bg:#E7F5EE; --watch:#B37F1D; --watch-bg:#FBF3E2;
-  --warn:#C05252; --warn-bg:#FBEAEA; --none:#8B94A0; --none-bg:#EFF1F4;
+  --up:#CC4A4A; --down:#3B66D4; --stamp:#C0392B;
+  --buy:#1C7C51; --buy-bg:#E7F5EE; --watch:#916717; --watch-bg:#FBF3E2;
+  --warn:#B14B4B; --warn-bg:#FBEAEA; --none:#8B94A0; --none-bg:#EFF1F4;
   --radius:14px; --shadow:0 1px 2px rgba(27,37,55,.05),0 4px 16px rgba(27,37,55,.06);
 }
 [data-theme="dark"]{
@@ -337,6 +337,7 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
           <svg id="gauge" viewBox="0 0 300 175" width="100%" style="max-width:340px" role="img" aria-label="공포 탐욕 게이지"></svg>
           <div class="gauge-score" id="gauge-score">–</div>
           <div class="gauge-label" id="gauge-label"></div>
+          <div id="gauge-delta" style="font-size:.85rem;color:var(--sub);margin-top:3px"></div>
           <div id="gauge-comps" style="width:100%;max-width:340px;margin-top:14px"></div>
         </div>
         <div class="card">
@@ -725,11 +726,11 @@ async function init() {
 function adviceFor(score) {
   if (score >= 75) return { label: '극심한 탐욕', color: 'var(--up)', html:
     '<h3>지금 따라 사는 건 위험해요</h3>"너도나도 주식 사자!" 분위기로 시장이 과열되어 있습니다.<ul><li>수익이 난 종목은 조금씩 팔아 <b>현금을 챙겨두세요.</b></li><li>폭풍우(조정)가 오기 전 대피할 준비를 할 때입니다.</li></ul>' };
-  if (score >= 55) return { label: '탐욕', color: '#D97843', html:
+  if (score >= 55) return { label: '탐욕', color: '#B06136', html:
     '<h3>주도주는 계속 들고 가세요</h3>시장에 활기가 돌고 상승 기운이 강합니다.<ul><li>새로 사고 싶다면 주가가 살짝 눌렸을 때(조정 시) 들어가세요.</li><li>한꺼번에 큰돈을 넣지는 마세요.</li></ul>' };
   if (score >= 45) return { label: '중립', color: 'var(--none)', html:
     '<h3>일단 지켜보세요</h3>오를지 내릴지 시장도 고민 중입니다. 방향이 모호해요.<ul><li>확실한 실적 발표나 경제 지표가 나올 때까지 기다리는 게 좋습니다.</li><li>공부해 둔 종목이 있다면 리스트만 만들어 두세요.</li></ul>' };
-  if (score >= 25) return { label: '공포', color: '#5B7BD8', html:
+  if (score >= 25) return { label: '공포', color: '#5572C9', html:
     '<h3>분할 매수를 시작해볼 구간</h3>사람들이 무서워서 주식을 팔고 있습니다.<ul><li>좋은 주식이 억울하게 같이 떨어지고 있지 않은지 살펴보세요.</li><li>겁먹지 말고 <b>조금씩 나누어 사 모으기</b>를 시작해 보세요.</li></ul>' };
   return { label: '극심한 공포', color: 'var(--down)', html:
     '<h3>역사적으로 가장 큰 기회의 구간</h3>공포가 극에 달했습니다. 모두가 주식은 끝났다고 말해요.<ul><li>평소 비싸서 못 샀던 1등 주식들을 저렴하게 담으세요.</li><li>가장 어두울 때가 해가 뜨기 직전입니다.</li></ul>' };
@@ -755,13 +756,22 @@ function renderHome() {
   if (ind.length) {
     $('#global-card').style.display = 'block';
     $('#global-metrics').innerHTML = ind.map(([name, val, chg, unit]) => {
-      const valStr = (unit === '$' ? '$' : '') + fmt2(val) + (unit === '원' ? '원' : '');
+      const valStr = (unit === '$' ? '$' : '') + fmt2(val)
+        + (unit === '원' ? '원' : unit === '%' ? '%' : '');
       const arrow = chg > 0 ? '▲' : chg < 0 ? '▼' : '–';
+      const chgStr = Math.abs(chg).toFixed(2) + (unit === '%' ? '%p' : '%');
       return `<div class="metric"><div class="lb">${name}</div>
         <div class="val" style="font-size:1.22rem">${valStr}</div>
-        <div class="sub ${pctCls(chg)}">${arrow} ${Math.abs(chg).toFixed(2)}%</div></div>`;
+        <div class="sub ${pctCls(chg)}">${arrow} ${chgStr}</div></div>`;
     }).join('');
   }
+}
+
+function scoreDelta(rows, score, todayKey) {
+  // 전 거래일 점수 대비 변화. history에서 오늘(빌드일) 행을 제외한 마지막 행과 비교.
+  // 휴장일엔 오늘 행이 없으므로 자연스럽게 최근 거래일과 비교됨. 이력 없으면 null.
+  const prev = (rows || []).filter(r => r && r[0] !== todayKey).pop();
+  return prev && typeof prev[1] === 'number' ? score - prev[1] : null;
 }
 
 /* ═══════════════════ 시장 현황 ═══════════════════ */
@@ -772,6 +782,11 @@ function renderMarket() {
   $('#gauge-score').textContent = m.score;
   $('#gauge-label').textContent = adv.label;
   $('#gauge-label').style.color = adv.color;
+  const d = scoreDelta(DATA.history, m.score, (m.updated || '').slice(0, 10));
+  $('#gauge-delta').innerHTML =
+    d === null ? '' :
+    d === 0 ? '전 거래일과 동일' :
+    `전 거래일 대비 <b class="${d > 0 ? 'red' : 'blue'}">${d > 0 ? '▲' : '▼'} ${Math.abs(d)}</b>`;
 
   // 컴포넌트별 하위 점수 막대 (CNN 스타일)
   const comps = m.components || {};
@@ -879,9 +894,11 @@ function drawGauge(score) {
     const [x, y] = pt([12, 50, 88][i], R + 24);
     svg += `<text x="${x}" y="${y}" text-anchor="middle" font-size="12" style="fill:var(--sub)">${t}</text>`;
   });
-  const [nx, ny] = pt(score, R - W / 2 - 8);
-  svg += `<line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" style="stroke:var(--ink)" stroke-width="3.5" stroke-linecap="round"/>`;
-  svg += `<circle cx="${cx}" cy="${cy}" r="7" style="fill:var(--ink)"/>`;
+  // 포인터: 중심에서 뻗는 긴 바늘 대신 색 띠 안쪽의 짧은 지시선(r 78→103)
+  // — 중앙(점수 숫자 영역)을 비워 어떤 점수에서도 숫자와 겹치지 않음 (전 구간 검증됨)
+  const [ix, iy] = pt(score, 78);
+  const [nx, ny] = pt(score, 103);
+  svg += `<line x1="${ix}" y1="${iy}" x2="${nx}" y2="${ny}" style="stroke:var(--ink)" stroke-width="5" stroke-linecap="round"/>`;
   $('#gauge').innerHTML = svg;
 }
 

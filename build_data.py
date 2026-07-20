@@ -90,6 +90,7 @@ def collect_indicators(fdr):
         ("S&P 500",  "US500",   "",  2),
         ("나스닥",    "IXIC",    "",  2),
         ("다우존스",  "DJI",     "",  2),
+        ("미국 10년 금리", "US10YT", "%", 2),
         ("달러/원",   "USD/KRW", "원", 2),
         ("금(온스)",  "GC=F",    "$", 2),
         ("WTI 유가",  "CL=F",    "$", 2),
@@ -105,8 +106,15 @@ def collect_indicators(fdr):
             if len(closes) < 2:
                 continue
             last, prev = float(closes.iloc[-1]), float(closes.iloc[-2])
-            out.append([name, round(last, nd), round((last / prev - 1) * 100, 2), unit])
-            print(f"  · {name}: {last:,.2f} ({(last/prev-1)*100:+.2f}%)")
+            # 금리(unit='%')는 비율 변화가 아니라 %p 차이로 표기 (시장 관례)
+            # — "4.54→4.60을 +1.32%"로 쓰면 금리가 1.32%p 올랐다는 오독을 부름
+            if unit == "%":
+                chg = round(last - prev, 2)
+                print(f"  · {name}: {last:,.2f}% ({chg:+.2f}%p)")
+            else:
+                chg = round((last / prev - 1) * 100, 2)
+                print(f"  · {name}: {last:,.2f} ({chg:+.2f}%)")
+            out.append([name, round(last, nd), chg, unit])
         except Exception as e:
             print(f"  ⚠️ {name}({sym}) 수집 실패 — 건너뜀: {e}")
     return out
@@ -762,6 +770,7 @@ def build_sample():
         "indicators": [
             ["KOSDAQ", 892.41, 1.12, ""], ["S&P 500", 6871.22, -0.34, ""],
             ["나스닥", 22984.15, -0.87, ""], ["다우존스", 44120.55, 0.21, ""],
+            ["미국 10년 금리", 4.54, 0.06, "%"],
             ["달러/원", 1342.50, 0.45, "원"], ["금(온스)", 3310.80, 0.62, "$"],
             ["WTI 유가", 71.34, -1.05, "$"],
         ],
@@ -778,7 +787,7 @@ def build_sample():
     write_json("news.json", {"updated": updated, "items": news})
     write_json("signals.json", {"updated": updated, "topN": 300, "rows": signals})
     hist, sc = [], 50
-    g = {"KOSDAQ": 880.0, "나스닥": 22800.0, "달러/원": 1340.0, "금(온스)": 3300.0, "WTI 유가": 71.0}
+    g = {"KOSDAQ": 880.0, "나스닥": 22800.0, "미국 10년 금리": 4.5, "달러/원": 1340.0, "금(온스)": 3300.0, "WTI 유가": 71.0}
     for d in range(45, 0, -1):
         day = datetime.now(KST) - timedelta(days=d)
         if day.weekday() >= 5:
