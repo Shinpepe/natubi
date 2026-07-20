@@ -283,17 +283,12 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
           <div class="body">
             <p><b>KOSDAQ</b> : 중소·성장 기업 중심 시장의 흐름을 보세요.</p>
             <p><b>S&P 500 · 나스닥 · 다우</b> : 미국 투자 시장의 전체적인 흐름을 보세요.</p>
-            <p><b>미국 10년 금리</b> : 전 세계 '돈값'의 기준입니다. 금리가 오르면 주식(특히 성장주)과 환율에 부담이 커집니다.</p>
+            <p><b>미국 10년 금리</b> : 금리가 오르면 주식 시장과 환율에 부담이 커집니다.</p>
             <p><b>달러/원</b> : 환율이 오르면 한국 투자 시장에 부담이 될 수 있습니다.</p>
             <p><b>금</b> : 금이 오르면 주식 시장이 불안하다는 신호일 수 있습니다.</p>
             <p><b>WTI 유가</b> : 국제 기름값이 오르면 기업과 물가에 부담이 커집니다.</p>
           </div>
         </details>
-      </div>
-      <div class="card" style="margin-top:18px">
-        <h2>오늘의 한 줄</h2>
-        <div class="desc">공포-탐욕 지수 기준 나투비의 조언</div>
-        <div id="home-advice" class="advice"></div>
       </div>
       <div class="card" id="term-card" style="display:none">
         <h2>오늘의 금융용어</h2>
@@ -353,7 +348,7 @@ details.help .body .tip{color:var(--buy);font-size:.83rem}
       <div class="grid2">
         <div class="card gauge-box">
           <h2 style="align-self:flex-start">시장 공포-탐욕 지수</h2>
-          <div class="desc" style="align-self:flex-start">모멘텀·변동성·안전자산 수요 등 여러 지표가 평소 대비 얼마나 벗어났는지를 각각 0~100점으로 매기고 평균 낸 지표예요. CNN 공포-탐욕 지수 방식을 한국 시장에 맞게 옮겼어요.</div>
+          <div class="desc" style="align-self:flex-start">모멘텀·변동성·안전자산 수요 등 여러 지표가 평소 대비 얼마나 벗어났는지를 각각 0~100점으로 매기고 평균 낸 지표예요.</div>
           <svg id="gauge" viewBox="0 0 300 175" width="100%" style="max-width:340px" role="img" aria-label="공포 탐욕 게이지"></svg>
           <div class="gauge-score" id="gauge-score">–</div>
           <div class="gauge-label" id="gauge-label"></div>
@@ -799,8 +794,6 @@ function renderHome() {
     <div class="metric"><div class="lb">KOSPI</div>${kospiHtml}</div>
     <div class="metric"><div class="lb">상승 / 하락</div><div class="val"><span class="red">${fmt(m.breadth.up)}</span> <span style="color:var(--line)">/</span> <span class="blue">${fmt(m.breadth.down)}</span></div><div class="sub">보합 ${fmt(m.breadth.flat)}</div></div>
     <div class="metric"><div class="lb">⭐ 오늘의 추천</div><div class="val">${recCnt}종목</div><div class="sub">실적·흐름·타이밍 모두 충족</div></div>`;
-  $('#home-advice').innerHTML = adv.html;
-
   // 글로벌 지표 타일
   const ind = m.indicators || [];
   if (ind.length) {
