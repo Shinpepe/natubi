@@ -3,6 +3,7 @@ name: 데이터 자동 갱신
 on:
   schedule:
     # 평일 17:10 KST (= 08:10 UTC) — 장 마감 후 데이터 확정 시점
+    # KST는 서머타임이 없어 UTC 환산이 연중 고정
     - cron: '10 8 * * 1-5'
   workflow_dispatch:      # Actions 탭에서 수동 실행 버튼 활성화
 
@@ -12,6 +13,7 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 30   # 외부 API 무한 대기로 러너 잔여시간 소진 방지
     steps:
       - name: 체크아웃
         uses: actions/checkout@v5
@@ -36,5 +38,8 @@ jobs:
           git config user.name "natubi-bot"
           git config user.email "actions@github.com"
           git add data/
-          git diff --cached --quiet || git commit -m "📊 데이터 갱신 $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M')"
+          git diff --cached --quiet && echo "변경 없음 — 커밋 생략" && exit 0
+          git commit -m "📊 데이터 갱신 $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M')"
+          # 잡 실행 중 다른 커밋이 푸시됐을 때 non-fast-forward로 실패하는 것 방지
+          git pull --rebase origin main
           git push
