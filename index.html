@@ -770,6 +770,8 @@ async function init() {
 
 /* ═══════════════════ 조언 텍스트 ═══════════════════ */
 function adviceFor(score) {
+  if (typeof score !== 'number') return { label: '계산 실패', color: 'var(--sub)', html:
+    '<h3>오늘은 지수를 계산하지 못했어요</h3>데이터 수집이 일시적으로 실패했습니다. 다음 거래일 갱신 때 자동으로 복구됩니다.' };
   if (score >= 75) return { label: '극심한 탐욕', color: 'var(--up)', html:
     '<h3>지금 따라 사는 건 위험해요</h3>"너도나도 주식 사자!" 분위기로 시장이 과열되어 있습니다.<ul><li>수익이 난 종목은 조금씩 팔아 <b>현금을 챙겨두세요.</b></li><li>폭풍우(조정)가 오기 전 대피할 준비를 할 때입니다.</li></ul>' };
   if (score >= 55) return { label: '탐욕', color: '#B06136', html:
@@ -785,13 +787,16 @@ function adviceFor(score) {
 /* ═══════════════════ 오늘의 요약 ═══════════════════ */
 function renderHome() {
   const m = DATA.market, sc = DATA.screening;
+  const fgOk = typeof m.score === 'number';
   const adv = adviceFor(m.score);
   const recCnt = sc.results.filter(r => r.rec).length;
   const kospiHtml = m.kospi
     ? `<div class="val">${fmt2(m.kospi.close)}</div><div class="sub ${pctCls(m.kospi.change)}">${m.kospi.change > 0 ? '▲' : m.kospi.change < 0 ? '▼' : '–'} ${Math.abs(m.kospi.change)}%</div>`
     : '<div class="val">–</div>';
   $('#home-metrics').innerHTML = `
-    <div class="metric"><div class="lb">시장 온도</div><div class="val" style="color:${adv.color}">${m.score}점</div><div class="sub">${adv.label}</div></div>
+    <div class="metric"><div class="lb">시장 온도</div>${fgOk
+      ? `<div class="val" style="color:${adv.color}">${m.score}점</div><div class="sub">${adv.label}</div>`
+      : `<div class="val" style="color:var(--sub)">–</div><div class="sub">계산 실패${m.fallback ? ` · 전일 값 ${m.fallback.score}점` : ''}</div>`}</div>
     <div class="metric"><div class="lb">KOSPI</div>${kospiHtml}</div>
     <div class="metric"><div class="lb">상승 / 하락</div><div class="val"><span class="red">${fmt(m.breadth.up)}</span> <span style="color:var(--line)">/</span> <span class="blue">${fmt(m.breadth.down)}</span></div><div class="sub">보합 ${fmt(m.breadth.flat)}</div></div>
     <div class="metric"><div class="lb">⭐ 오늘의 추천</div><div class="val">${recCnt}종목</div><div class="sub">실적·흐름·타이밍 모두 충족</div></div>`;
@@ -814,6 +819,7 @@ function renderHome() {
 function scoreDelta(rows, score, todayKey) {
   // 전 거래일 점수 대비 변화. history에서 오늘(빌드일) 행을 제외한 마지막 행과 비교.
   // 휴장일엔 오늘 행이 없으므로 자연스럽게 최근 거래일과 비교됨. 이력 없으면 null.
+  if (typeof score !== 'number') return null;  // 계산 실패 시 '전일 대비'는 무의미
   const prev = (rows || []).filter(r => r && r[0] !== todayKey).pop();
   return prev && typeof prev[1] === 'number' ? score - prev[1] : null;
 }
@@ -821,16 +827,25 @@ function scoreDelta(rows, score, todayKey) {
 /* ═══════════════════ 시장 현황 ═══════════════════ */
 function renderMarket() {
   const m = DATA.market;
+  const fgOk = typeof m.score === 'number';
+  const fb = m.fallback;
   drawGauge(m.score);
   const adv = adviceFor(m.score);
-  $('#gauge-score').textContent = m.score;
+  $('#gauge-score').textContent = fgOk ? m.score : '–';
   $('#gauge-label').textContent = adv.label;
   $('#gauge-label').style.color = adv.color;
-  const d = scoreDelta(DATA.history, m.score, (m.updated || '').slice(0, 10));
-  $('#gauge-delta').innerHTML =
-    d === null ? '' :
-    d === 0 ? '전 거래일과 동일' :
-    `전 거래일 대비 <b class="${d > 0 ? 'red' : 'blue'}">${d > 0 ? '▲' : '▼'} ${Math.abs(d)}</b>`;
+  if (fgOk) {
+    const d = scoreDelta(DATA.history, m.score, (m.updated || '').slice(0, 10));
+    $('#gauge-delta').innerHTML =
+      d === null ? '' :
+      d === 0 ? '전 거래일과 동일' :
+      `전 거래일 대비 <b class="${d > 0 ? 'red' : 'blue'}">${d > 0 ? '▲' : '▼'} ${Math.abs(d)}</b>`;
+  } else {
+    const fbAdv = fb ? adviceFor(fb.score) : null;
+    $('#gauge-delta').innerHTML = fb
+      ? `지수 계산 실패 — <b>전일 값 참조: <span style="color:${fbAdv.color}">${fb.score}점 · ${fbAdv.label}</span></b> <span style="color:var(--sub)">(${fb.date} 기준)</span>`
+      : '지수 계산 실패 — 참조할 전일 값이 없습니다';
+  }
 
   // 컴포넌트별 하위 점수 막대 (CNN 스타일)
   const comps = m.components || {};
@@ -847,7 +862,8 @@ function renderMarket() {
     </div>`;
   }).join('') : '';
   $('#market-date').textContent = '분석 기준: ' + m.updated;
-  $('#market-advice').innerHTML = adv.html;
+  $('#market-advice').innerHTML = (fgOk || !fb) ? adv.html :
+    `<div style="font-size:.85rem;color:var(--sub);margin-bottom:10px">⚠️ 오늘 지수 계산이 실패해 <b>전일(${fb.date}) 값 ${fb.score}점</b> 기준 조언을 대신 표시합니다.</div>` + adviceFor(fb.score).html;
 
   const b = m.breadth, tot = b.up + b.down + b.flat || 1;
   $('#breadth-bar').innerHTML =
@@ -940,9 +956,11 @@ function drawGauge(score) {
   });
   // 포인터: 중심에서 뻗는 긴 바늘 대신 색 띠 안쪽의 짧은 지시선(r 78→103)
   // — 중앙(점수 숫자 영역)을 비워 어떤 점수에서도 숫자와 겹치지 않음 (전 구간 검증됨)
-  const [ix, iy] = pt(score, 78);
-  const [nx, ny] = pt(score, 103);
-  svg += `<line x1="${ix}" y1="${iy}" x2="${nx}" y2="${ny}" style="stroke:var(--ink)" stroke-width="5" stroke-linecap="round"/>`;
+  if (typeof score === 'number') {  // 계산 실패(null)면 지시선 생략
+    const [ix, iy] = pt(score, 78);
+    const [nx, ny] = pt(score, 103);
+    svg += `<line x1="${ix}" y1="${iy}" x2="${nx}" y2="${ny}" style="stroke:var(--ink)" stroke-width="5" stroke-linecap="round"/>`;
+  }
   $('#gauge').innerHTML = svg;
 }
 

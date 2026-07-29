@@ -175,19 +175,39 @@ def load_past_components():
     return out
 
 
+def load_prev_score():
+    """history.json의 마지막 유효 점수를 {'score','date'}로 반환.
+    지수 계산 실패 시 '전일 값 참조' 표시용. 오늘(빌드일) 행은 제외, 없으면 None."""
+    path = os.path.join(DATA_DIR, "history.json")
+    if not os.path.exists(path):
+        return None
+    today = datetime.now(KST).strftime("%Y-%m-%d")
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            rows = json.load(f).get("rows", [])
+        for r in reversed(rows):
+            if r and r[0] != today and isinstance(r[1], (int, float)):
+                return {"score": int(r[1]), "date": r[0]}
+    except Exception:
+        pass
+    return None
+
+
 def calc_market_score(fdr, pd, merged=None, histories=None, past=None):
     """공포-탐욕 지수 (CNN 방법론 이식: 컴포넌트별 z-score → 동일가중 평균)
     merged    : KRX 전종목 스냅샷 (ChagesRatio, Amount) — 시장폭 계산용
     histories : {ticker: 일봉 DataFrame} — 52주 신고/신저가 계산용 (기존 수집분 재사용)
     past      : load_past_components() 결과 — 스칼라 지표 정규화용 이력
-    반환      : (score, kospi, components)"""
+    반환      : (score|None, kospi, components) — score=None은 '계산 실패'.
+                실패를 50(중립)으로 위장하지 않는다(가짜 중립값 주입 방지)."""
     past = past or {}
     comp = {}
     try:
         start = (datetime.now(KST) - timedelta(days=760)).strftime("%Y-%m-%d")
         k = fdr.DataReader("^KS11", start)
         if k is None or len(k) < 150:
-            return 50, None, {}
+            print("  ⚠️ KOSPI 데이터 수집 실패/부족 — 지수 계산 불가")
+            return None, None, {}
 
         # ── 1. 모멘텀: 125일 이동평균 대비 이격 ──
         mom = k["Close"] / k["Close"].rolling(125).mean() - 1
@@ -244,7 +264,7 @@ def calc_market_score(fdr, pd, merged=None, histories=None, past=None):
         # ── 합산: 동일가중 평균 (CNN 방식) ──
         parts = {kk: v for kk, v in comp.items() if not kk.startswith("_")}
         if not parts:
-            return 50, None, comp
+            return None, None, comp
         score = int(round(max(0, min(100, sum(parts.values()) / len(parts)))))
         for kk, v in parts.items():
             print(f"  · {kk}: {v:.0f}")
@@ -257,7 +277,7 @@ def calc_market_score(fdr, pd, merged=None, histories=None, past=None):
         return score, kospi, comp
     except Exception as e:
         print(f"  ⚠️ 시장 점수 계산 실패: {e}")
-        return 50, None, {}
+        return None, None, {}
 
 
 def check_fundamental(dart, pd, ticker, mcap, target_year, report_code):
@@ -625,12 +645,19 @@ def build_real():
     print("📊 공포-탐욕 지수 계산...")
     past = load_past_components()
     score, kospi, components = calc_market_score(fdr, pd, merged, histories, past)
+    fallback = None
+    if score is None:
+        fallback = load_prev_score()
+        if fallback:
+            print(f"  ⚠️ 지수 계산 실패 — 전일 값({fallback['date']}: {fallback['score']}점)을 참조용으로 기록")
+        else:
+            print("  ⚠️ 지수 계산 실패 — 참조할 전일 값도 없음")
     up = int((merged["ChagesRatio"] > 0).sum())
     down = int((merged["ChagesRatio"] < 0).sum())
     flat = int((merged["ChagesRatio"] == 0).sum())
     comp_display = {kk: round(v) for kk, v in components.items() if not kk.startswith("_")}
     write_json("market.json", {
-        "updated": updated, "score": score, "kospi": kospi,
+        "updated": updated, "score": score, "fallback": fallback, "kospi": kospi,
         "breadth": {"up": up, "down": down, "flat": flat},
         "indicators": indicators,
         "components": comp_display,
@@ -639,8 +666,10 @@ def build_real():
     # 전일 값이 중복 누적되어 z-score 정규화 이력을 오염시키므로 history 누적만 생략.
     # market.json 등 화면 데이터 갱신은 그대로 수행(멱등).
     today_kst = datetime.now(KST).strftime("%Y-%m-%d")
-    if kospi and kospi.get("date") == today_kst:
+    if score is not None and kospi and kospi.get("date") == today_kst:
         append_history(score, kospi, indicators, components)
+    elif score is None:
+        print("  ℹ️ 지수 계산 실패 — history 누적 생략(전일 값 유지)")
     else:
         print(f"  ℹ️ KOSPI 최종 거래일({kospi.get('date') if kospi else '?'}) ≠ 오늘({today_kst}) "
               f"— 휴장일로 판단해 history 누적 생략")
