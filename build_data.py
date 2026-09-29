@@ -601,6 +601,22 @@ def build_real():
     merged["Marcap"] = pd.to_numeric(merged["Marcap"], errors="coerce").fillna(0)
     merged = merged[merged["Close"] > 0]
 
+    # ── 원천 데이터 이상 가드 ──
+    # 시세가 비정상(빈 값·0원)이면 빈 JSON으로 기존 데이터를 덮어쓰지 않고 실패 종료한다.
+    # (exit 1 → 워크플로의 커밋 단계가 실행되지 않아 사이트는 마지막 정상 데이터를 유지)
+    # ※ 2026-09 FDR KRX 캐시가 갱신되지 않아 전 종목 종가가 비어 모든 JSON이 0 KB로 커밋된 사례 대응.
+    MIN_VALID = int(os.environ.get("MIN_VALID_STOCKS", "1000"))
+    if len(merged) < MIN_VALID:
+        print(f"❌ 유효 시세 종목 {len(merged)}개 (< {MIN_VALID}) — 원천 데이터 이상으로 판단, 기존 데이터 유지")
+        print(f"   [진단] FDR {getattr(fdr, '__version__', '?')} · df_price {df_price.shape}")
+        print(f"   [진단] 컬럼: {list(df_price.columns)}")
+        try:
+            print(df_price.dtypes.to_string())
+            print(df_price.head(5).to_string())
+        except Exception:
+            pass
+        sys.exit(1)
+
     # prices.json — [코드, 종목명, 종가, 등락률] 압축 배열
     prices = [
         [r.Code, r.Name, int(r.Close), round(float(r.ChagesRatio), 2)]
