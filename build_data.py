@@ -82,6 +82,43 @@ def clean_value(val, pd):
         return 0
 
 
+def load_sector_desc(fdr, pd, df_price):
+    """종목별 섹터 정보 수집 (트리맵용). 실패해도 파이프라인 전체를 멈추지 않는다.
+    1순위: fdr.StockListing("KRX-DESC") — 성공 시 코드→섹터 매핑을 sector_map.json에 저장
+    2순위: 저장된 sector_map.json (코드 기준, 전 종목)
+    3순위: 기존 sectors.json (종목명 기준, 시총 상위 500)
+    ※ 2026-09 FDR의 KRX-DESC 캐시 CSV가 404를 반환해 수집이 전면 중단된 사례 대응."""
+    sector_map_path = os.path.join(DATA_DIR, "sector_map.json")
+    try:
+        df_desc = fdr.StockListing("KRX-DESC")[["Code", "Sector"]]
+        smap = {str(r.Code): r.Sector for r in df_desc.dropna().itertuples()}
+        if smap:
+            write_json("sector_map.json", smap)
+        return df_desc
+    except Exception as e:
+        print(f"  ⚠️ KRX-DESC 수집 실패 — 저장된 섹터 정보로 대체: {e}")
+
+    smap = {}
+    if os.path.exists(sector_map_path):
+        try:
+            with open(sector_map_path, "r", encoding="utf-8") as f:
+                smap = json.load(f)
+        except Exception:
+            smap = {}
+    if smap:
+        sec = df_price["Code"].map(smap)
+        print(f"  ℹ️ sector_map.json 사용 — {int(sec.notna().sum())}종목 섹터 복원")
+    else:
+        try:
+            with open(os.path.join(DATA_DIR, "sectors.json"), "r", encoding="utf-8") as f:
+                smap = {r[0]: r[1] for r in json.load(f).get("rows", [])}
+        except Exception:
+            smap = {}
+        sec = df_price["Name"].map(smap)
+        print(f"  ℹ️ 이전 sectors.json 사용 — {int(sec.notna().sum())}종목 섹터 복원")
+    return pd.DataFrame({"Code": df_price["Code"], "Sector": sec})
+
+
 def collect_indicators(fdr):
     """글로벌 참고 지표 수집: 종목별 실패는 건너뛰고 나머지는 정상 제공"""
     specs = [
@@ -553,7 +590,7 @@ def build_real():
     # ── 1. 전 종목 시세 + 섹터 ──
     print("📥 KRX 전 종목 시세 수집...")
     df_price = fdr.StockListing("KRX")
-    df_desc = fdr.StockListing("KRX-DESC")
+    df_desc = load_sector_desc(fdr, pd, df_price)   # 실패 시 저장된 섹터 정보로 대체
     merged = pd.merge(
         df_price[["Code", "Name", "Close", "ChagesRatio", "Marcap", "Volume", "Amount"]],
         df_desc[["Code", "Sector"]], on="Code", how="left",
